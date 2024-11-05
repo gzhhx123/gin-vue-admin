@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/bagique"
 )
 
 func bizModel() error {
@@ -10,5 +11,7 @@ func bizModel() error {
 	if err != nil {
 		return err
 	}
+	bagiqueDb := global.GetGlobalDBByDBName("bagique")
+	bagiqueDb.AutoMigrate(bagique.Brand{})
 	return nil
 }

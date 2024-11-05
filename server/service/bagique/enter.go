@@ -1,4 +1,3 @@
 package bagique
 
-type ServiceGroup struct {
-}
+type ServiceGroup struct{ BrandService }

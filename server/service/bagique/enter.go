@@ -1,3 +1,6 @@
 package bagique
 
-type ServiceGroup struct{ BrandService }
+type ServiceGroup struct {
+	BrandService
+	ProductService
+}

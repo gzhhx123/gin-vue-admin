@@ -5,9 +5,11 @@ import "github.com/flipped-aurora/gin-vue-admin/server/service"
 type ApiGroup struct {
 	BrandApi
 	ProductApi
+	CompanyApi
 }
 
 var (
 	brandService   = service.ServiceGroupApp.BagiqueServiceGroup.BrandService
 	productService = service.ServiceGroupApp.BagiqueServiceGroup.ProductService
+	companyService = service.ServiceGroupApp.BagiqueServiceGroup.CompanyService
 )

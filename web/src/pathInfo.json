@@ -1,5 +1,9 @@
 {
   "/src/view/about/index.vue": "About",
+  "/src/view/bagique/brand/brand.vue": "Brand",
+  "/src/view/bagique/brand/brandForm.vue": "BrandForm",
+  "/src/view/bagique/product/product.vue": "Product",
+  "/src/view/bagique/product/productForm.vue": "ProductForm",
   "/src/view/dashboard/components/banner.vue": "Banner",
   "/src/view/dashboard/components/card.vue": "Card",
   "/src/view/dashboard/components/charts-content-numbers.vue": "ChartsContentNumbers",

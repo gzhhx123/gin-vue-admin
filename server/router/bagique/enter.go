@@ -6,10 +6,12 @@ type RouterGroup struct {
 	BrandRouter
 	ProductRouter
 	CompanyRouter
+	SellerRouter
 }
 
 var (
 	brandApi   = api.ApiGroupApp.BagiqueApiGroup.BrandApi
 	productApi = api.ApiGroupApp.BagiqueApiGroup.ProductApi
 	companyApi = api.ApiGroupApp.BagiqueApiGroup.CompanyApi
+	sellerApi  = api.ApiGroupApp.BagiqueApiGroup.SellerApi
 )

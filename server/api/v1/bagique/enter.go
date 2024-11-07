@@ -7,11 +7,13 @@ type ApiGroup struct {
 	ProductApi
 	CompanyApi
 	SellerApi
+	EvaluateApi
 }
 
 var (
-	brandService   = service.ServiceGroupApp.BagiqueServiceGroup.BrandService
-	productService = service.ServiceGroupApp.BagiqueServiceGroup.ProductService
-	companyService = service.ServiceGroupApp.BagiqueServiceGroup.CompanyService
-	sellerService  = service.ServiceGroupApp.BagiqueServiceGroup.SellerService
+	brandService    = service.ServiceGroupApp.BagiqueServiceGroup.BrandService
+	productService  = service.ServiceGroupApp.BagiqueServiceGroup.ProductService
+	companyService  = service.ServiceGroupApp.BagiqueServiceGroup.CompanyService
+	sellerService   = service.ServiceGroupApp.BagiqueServiceGroup.SellerService
+	evaluateService = service.ServiceGroupApp.BagiqueServiceGroup.EvaluateService
 )

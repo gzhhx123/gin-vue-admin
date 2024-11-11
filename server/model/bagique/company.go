@@ -5,7 +5,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 )
 
-// 估价公司信息 结构体  Company
+// 公司信息 结构体  Company
 type Company struct {
 	global.GVA_MODEL
 	CompanyName      *string `json:"companyName" form:"companyName" gorm:"column:company_name;comment:公司名称;" binding:"required"` //公司名称
@@ -14,7 +14,7 @@ type Company struct {
 	Remark           *string `json:"remark" form:"remark" gorm:"column:remark;comment:备注;"`                                      //备注
 }
 
-// TableName 估价公司信息 Company自定义表名 bagique_companies
+// TableName 公司信息 Company自定义表名 bagique_companies
 func (Company) TableName() string {
 	return "bagique_companies"
 }

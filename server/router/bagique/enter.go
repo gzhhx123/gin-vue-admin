@@ -8,12 +8,14 @@ type RouterGroup struct {
 	CompanyRouter
 	SellerRouter
 	EvaluateRouter
+	EvaluatePriceRouter
 }
 
 var (
-	brandApi    = api.ApiGroupApp.BagiqueApiGroup.BrandApi
-	productApi  = api.ApiGroupApp.BagiqueApiGroup.ProductApi
-	companyApi  = api.ApiGroupApp.BagiqueApiGroup.CompanyApi
-	sellerApi   = api.ApiGroupApp.BagiqueApiGroup.SellerApi
-	evaluateApi = api.ApiGroupApp.BagiqueApiGroup.EvaluateApi
+	brandApi         = api.ApiGroupApp.BagiqueApiGroup.BrandApi
+	productApi       = api.ApiGroupApp.BagiqueApiGroup.ProductApi
+	companyApi       = api.ApiGroupApp.BagiqueApiGroup.CompanyApi
+	sellerApi        = api.ApiGroupApp.BagiqueApiGroup.SellerApi
+	evaluateApi      = api.ApiGroupApp.BagiqueApiGroup.EvaluateApi
+	evaluatePriceApi = api.ApiGroupApp.BagiqueApiGroup.EvaluatePriceApi
 )

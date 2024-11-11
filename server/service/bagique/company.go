@@ -8,42 +8,42 @@ import (
 
 type CompanyService struct{}
 
-// CreateCompany 创建估价公司信息记录
+// CreateCompany 创建公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) CreateCompany(company *bagique.Company) (err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Create(company).Error
 	return err
 }
 
-// DeleteCompany 删除估价公司信息记录
+// DeleteCompany 删除公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) DeleteCompany(ID string) (err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Company{}, "id = ?", ID).Error
 	return err
 }
 
-// DeleteCompanyByIds 批量删除估价公司信息记录
+// DeleteCompanyByIds 批量删除公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) DeleteCompanyByIds(IDs []string) (err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Delete(&[]bagique.Company{}, "id in ?", IDs).Error
 	return err
 }
 
-// UpdateCompany 更新估价公司信息记录
+// UpdateCompany 更新公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) UpdateCompany(company bagique.Company) (err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Company{}).Where("id = ?", company.ID).Updates(&company).Error
 	return err
 }
 
-// GetCompany 根据ID获取估价公司信息记录
+// GetCompany 根据ID获取公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) GetCompany(ID string) (company bagique.Company, err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Where("id = ?", ID).First(&company).Error
 	return
 }
 
-// GetCompanyInfoList 分页获取估价公司信息记录
+// GetCompanyInfoList 分页获取公司信息记录
 // Author [yourname](https://github.com/yourname)
 func (companyService *CompanyService) GetCompanyInfoList(info bagiqueReq.CompanySearch) (list []bagique.Company, total int64, err error) {
 	limit := info.PageSize

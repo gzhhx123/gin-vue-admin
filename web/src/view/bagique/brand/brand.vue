@@ -16,7 +16,7 @@
        —
       <el-date-picker v-model="searchInfo.endCreatedAt" type="datetime" placeholder="结束日期" :disabled-date="time=> searchInfo.startCreatedAt ? time.getTime() < searchInfo.startCreatedAt.getTime() : false"></el-date-picker>
       </el-form-item>
-      
+
         <el-form-item label="品牌名称" prop="brandName">
          <el-input v-model="searchInfo.brandName" placeholder="搜索条件" />
         </el-form-item>
@@ -57,16 +57,16 @@
         @sort-change="sortChange"
         >
         <el-table-column type="selection" width="55" />
-        
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+
+        <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
-        
+
           <el-table-column sortable align="left" label="品牌名称" prop="brandName" width="120" />
           <el-table-column sortable align="left" label="品牌简称" prop="brandShortName" width="120" />
           <el-table-column label="品牌logo" prop="brandLogo" width="200">
               <template #default="scope">
-                <el-image preview-teleported style="width: 100px; height: 100px" :src="getUrl(scope.row.brandLogo)" fit="cover"/>
+                <el-image preview-teleported v-if="getUrl(scope.row.brandLogo)" style="width: 100px; height: 100px" :src="getUrl(scope.row.brandLogo)" fit="cover"/>
               </template>
           </el-table-column>
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
@@ -129,10 +129,16 @@
                         {{ detailFrom.brandShortName }}
                     </el-descriptions-item>
                     <el-descriptions-item label="品牌logo">
-                            <el-image style="width: 50px; height: 50px" :preview-src-list="returnArrImg(detailFrom.brandLogo)" :src="getUrl(detailFrom.brandLogo)" fit="cover" />
+                            <el-image v-if="getUrl(detailFrom.brandLogo)" style="width: 50px; height: 50px" :preview-src-list="returnArrImg(detailFrom.brandLogo)" :src="getUrl(detailFrom.brandLogo)" fit="cover" />
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
                     </el-descriptions-item>
             </el-descriptions>
         </el-drawer>
@@ -226,6 +232,7 @@ const searchInfo = ref({})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
+            CreatedAt: 'created_at',
             brandName: 'brand_name',
             brandShortName: 'brand_short_name',
             brandLogo: 'brand_logo',

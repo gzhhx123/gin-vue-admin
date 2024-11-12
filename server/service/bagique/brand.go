@@ -70,6 +70,7 @@ func (brandService *BrandService) GetBrandInfoList(info bagiqueReq.BrandSearch) 
 	}
 	var OrderStr string
 	orderMap := make(map[string]bool)
+	orderMap["created_at"] = true
 	orderMap["brand_name"] = true
 	orderMap["brand_short_name"] = true
 	orderMap["brand_logo"] = true

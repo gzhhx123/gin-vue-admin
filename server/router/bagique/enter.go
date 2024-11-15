@@ -9,6 +9,7 @@ type RouterGroup struct {
 	SellerRouter
 	EvaluateRouter
 	EvaluatePriceRouter
+	CommonRouter
 }
 
 var (
@@ -18,4 +19,5 @@ var (
 	sellerApi        = api.ApiGroupApp.BagiqueApiGroup.SellerApi
 	evaluateApi      = api.ApiGroupApp.BagiqueApiGroup.EvaluateApi
 	evaluatePriceApi = api.ApiGroupApp.BagiqueApiGroup.EvaluatePriceApi
+	commonApi        = api.ApiGroupApp.BagiqueApiGroup.CommonApi
 )

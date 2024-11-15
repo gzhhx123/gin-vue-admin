@@ -28,18 +28,6 @@
         <el-form-item label="产品sku" prop="productSku">
          <el-input v-model="searchInfo.productSku" placeholder="搜索条件" />
         </el-form-item>
-        <el-form-item label="参考价（Min）" prop="referPriceMin">
-            
-            <el-input v-model.number="searchInfo.startReferPriceMin" placeholder="最小值" />
-            —
-            <el-input v-model.number="searchInfo.endReferPriceMin" placeholder="最大值" />
-        </el-form-item>
-        <el-form-item label="参考价（Max）" prop="referPriceMax">
-            
-            <el-input v-model.number="searchInfo.startReferPriceMax" placeholder="最小值" />
-            —
-            <el-input v-model.number="searchInfo.endReferPriceMax" placeholder="最大值" />
-        </el-form-item>
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
@@ -75,7 +63,7 @@
         >
         <el-table-column type="selection" width="55" />
         
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+        <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
         
@@ -88,8 +76,32 @@
          </el-table-column>
           <el-table-column sortable align="left" label="产品名称" prop="productName" width="120" />
           <el-table-column sortable align="left" label="产品sku" prop="productSku" width="120" />
-          <el-table-column sortable align="left" label="参考价（Min）" prop="referPriceMin" width="120" />
-          <el-table-column sortable align="left" label="参考价（Max）" prop="referPriceMax" width="120" />
+          <el-table-column sortable align="left" label="参考价（Min）" prop="referPriceMin" width="180" >
+            <template #default="scope">
+              <div>
+                {{ scope.row.referPriceMin }}$
+              </div>
+              <div>
+                {{ scope.row.referPriceMin*7.1 }}￥(7.1)
+              </div>
+              <div>
+                {{ scope.row.referPriceMin*rate }}￥({{rate}})
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column sortable align="left" label="参考价（Max）" prop="referPriceMax" width="180" >
+            <template #default="scope">
+              <div>
+                {{ scope.row.referPriceMax }}$
+              </div>
+              <div>
+                {{ scope.row.referPriceMax*7.1 }}￥(7.1)
+              </div>
+              <div>
+                {{ scope.row.referPriceMax*rate }}￥({{rate}})
+              </div>
+            </template>
+          </el-table-column>
            <el-table-column label="参考图片" prop="referPics" width="200">
               <template #default="scope">
                  <div class="multiple-img-box">
@@ -163,7 +175,7 @@
     <el-drawer destroy-on-close size="800" v-model="detailShow" :show-close="true" :before-close="closeDetailShow" title="查看">
             <el-descriptions :column="1" border>
                     <el-descriptions-item label="品牌">
-                        {{ detailFrom.brandId }}
+                        {{ filterDataSource(dataSource.brandId,detailFrom.brandId) }}
                     </el-descriptions-item>
                     <el-descriptions-item label="产品名称">
                         {{ detailFrom.productName }}
@@ -172,16 +184,38 @@
                         {{ detailFrom.productSku }}
                     </el-descriptions-item>
                     <el-descriptions-item label="参考价（Min）">
-                        {{ detailFrom.referPriceMin }}
+                      <div>
+                        {{ detailFrom.referPriceMin }}$
+                      </div>
+                      <div>
+                        {{ detailFrom.referPriceMin*7.1 }}￥(7.1)
+                      </div>
+                      <div>
+                        {{ detailFrom.referPriceMin*7.15 }}￥(7.15)
+                      </div>
                     </el-descriptions-item>
                     <el-descriptions-item label="参考价（Max）">
-                        {{ detailFrom.referPriceMax }}
+                      <div>
+                        {{ detailFrom.referPriceMax }}$
+                      </div>
+                      <div>
+                        {{ detailFrom.referPriceMax*7.1 }}￥(7.1)
+                      </div>
+                      <div>
+                        {{ detailFrom.referPriceMax*7.15 }}￥(7.15)
+                      </div>
                     </el-descriptions-item>
                     <el-descriptions-item label="参考图片">
                             <el-image style="width: 50px; height: 50px; margin-right: 10px" :preview-src-list="returnArrImg(detailFrom.referPics)" :initial-index="index" v-for="(item,index) in detailFrom.referPics" :key="index" :src="getUrl(item)" fit="cover" />
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
                     </el-descriptions-item>
             </el-descriptions>
         </el-drawer>
@@ -199,6 +233,7 @@ import {
   findProduct,
   getProductList
 } from '@/api/bagique/product'
+import { getRate } from '@/api/bagique/common'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
 import SelectImage from '@/components/selectImage/selectImage.vue'
@@ -295,6 +330,7 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
+const rate = ref(0)
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
@@ -356,7 +392,16 @@ const getTableData = async() => {
   }
 }
 
+// 获取美元汇率
+const getRateData = async () => {
+  const res = await getRate({})
+  if (res.code === 0) {
+    rate.value = res.data.rate
+  }
+}
+
 getTableData()
+getRateData()
 
 // ============== 表格控制部分结束 ===============
 

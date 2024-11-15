@@ -7,4 +7,5 @@ type ServiceGroup struct {
 	SellerService
 	EvaluateService
 	EvaluatePriceService
+	CommonService
 }

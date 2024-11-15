@@ -9,6 +9,7 @@ type ApiGroup struct {
 	SellerApi
 	EvaluateApi
 	EvaluatePriceApi
+	CommonApi
 }
 
 var (
@@ -18,4 +19,5 @@ var (
 	sellerService        = service.ServiceGroupApp.BagiqueServiceGroup.SellerService
 	evaluateService      = service.ServiceGroupApp.BagiqueServiceGroup.EvaluateService
 	evaluatePriceService = service.ServiceGroupApp.BagiqueServiceGroup.EvaluatePriceService
+	commonService        = service.ServiceGroupApp.BagiqueServiceGroup.CommonService
 )

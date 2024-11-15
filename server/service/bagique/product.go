@@ -64,12 +64,6 @@ func (productService *ProductService) GetProductInfoList(info bagiqueReq.Product
 	if info.ProductSku != nil && *info.ProductSku != "" {
 		db = db.Where("product_sku LIKE ?", "%"+*info.ProductSku+"%")
 	}
-	if info.StartReferPriceMin != nil && info.EndReferPriceMin != nil {
-		db = db.Where("refer_price_min BETWEEN ? AND ? ", info.StartReferPriceMin, info.EndReferPriceMin)
-	}
-	if info.StartReferPriceMax != nil && info.EndReferPriceMax != nil {
-		db = db.Where("refer_price_max BETWEEN ? AND ? ", info.StartReferPriceMax, info.EndReferPriceMax)
-	}
 	if info.Remark != nil && *info.Remark != "" {
 		db = db.Where("remark LIKE ?", "%"+*info.Remark+"%")
 	}

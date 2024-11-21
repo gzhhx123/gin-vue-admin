@@ -121,3 +121,17 @@ export const getEvaluatePublic = () => {
     method: 'get',
   })
 }
+// RestoreEvaluate 恢复单条evaluate的数据，也就是将deleted_at设置为null
+// @Tags Evaluate
+// @Summary 恢复单条evaluate的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/restoreEvaluate [PUT]
+export const restoreEvaluate = (params) => {
+  return service({
+    url: '/evaluate/restoreEvaluate',
+    method: 'PUT',
+    params
+  })
+}

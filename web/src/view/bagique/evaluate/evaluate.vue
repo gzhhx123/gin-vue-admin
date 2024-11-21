@@ -35,7 +35,9 @@
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
-
+        <el-form-item label="显示已删除" prop="isRemove">
+          <el-switch v-model="searchInfo.isRemove" />
+        </el-form-item>
         <template v-if="showAllQuery">
           <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
         </template>
@@ -102,7 +104,8 @@
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
             <el-button  type="primary" link icon="edit" class="table-button" @click="updateEvaluateFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+            <el-button  type="primary" link icon="edit" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -182,15 +185,15 @@
 </template>
 
 <script setup>
-import {
+  import {
     getEvaluateDataSource,
-  createEvaluate,
-  deleteEvaluate,
-  deleteEvaluateByIds,
-  updateEvaluate,
-  findEvaluate,
-  getEvaluateList
-} from '@/api/bagique/evaluate'
+    createEvaluate,
+    deleteEvaluate,
+    deleteEvaluateByIds,
+    updateEvaluate,
+    findEvaluate,
+    getEvaluateList, restoreEvaluate
+  } from '@/api/bagique/evaluate'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
 import SelectImage from '@/components/selectImage/selectImage.vue'
@@ -374,14 +377,26 @@ const handleSelectionChange = (val) => {
 
 // 删除行
 const deleteRow = (row) => {
-    ElMessageBox.confirm('确定要删除吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-    }).then(() => {
-            deleteEvaluateFunc(row)
-        })
-    }
+  const tips = row.DeletedAt ? '确定要彻底删除吗?' : '确定要删除吗?'
+  ElMessageBox.confirm(tips, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    deleteEvaluateFunc(row)
+  })
+}
+
+// 恢复行
+const restoreRow = (row) => {
+  ElMessageBox.confirm('确定要恢复吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    restoreEvaluateFunc(row)
+  })
+}
 
 // 多选删除
 const onDelete = async() => {
@@ -432,17 +447,30 @@ const updateEvaluateFunc = async(row) => {
 
 // 删除行
 const deleteEvaluateFunc = async (row) => {
-    const res = await deleteEvaluate({ ID: row.ID })
-    if (res.code === 0) {
-        ElMessage({
-                type: 'success',
-                message: '删除成功'
-            })
-            if (tableData.value.length === 1 && page.value > 1) {
-            page.value--
-        }
-        getTableData()
+  const res = await deleteEvaluate({ ID: row.ID, TYPE: row.DeletedAt ? 'HARD' : 'SOFT' })
+  const tips = row.DeletedAt ? '彻底删除成功' : '删除成功'
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: tips
+    })
+    if (tableData.value.length === 1 && page.value > 1) {
+      page.value--
     }
+    getTableData()
+  }
+}
+
+// 恢复行
+const restoreEvaluateFunc = async (row) => {
+  const res = await restoreEvaluate({ ID: row.ID })
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '恢复成功'
+    })
+    getTableData()
+  }
 }
 
 // 弹窗控制标记

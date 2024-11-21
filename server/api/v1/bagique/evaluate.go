@@ -47,7 +47,8 @@ func (evaluateApi *EvaluateApi) CreateEvaluate(c *gin.Context) {
 // @Router /evaluate/deleteEvaluate [delete]
 func (evaluateApi *EvaluateApi) DeleteEvaluate(c *gin.Context) {
 	ID := c.Query("ID")
-	err := evaluateService.DeleteEvaluate(ID)
+	TYPE := c.Query("TYPE")
+	err := evaluateService.DeleteEvaluate(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -183,4 +184,23 @@ func (evaluateApi *EvaluateApi) GetEvaluatePublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的估价信息接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreEvaluate 恢复单条evaluate的数据，也就是将deleted_at设置为null
+// @Tags Evaluate
+// @Summary 恢复单条evaluate的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.EvaluateSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/restoreEvaluate [PUT]
+func (evaluateApi *EvaluateApi) RestoreEvaluate(c *gin.Context) {
+	ID := c.Query("ID")
+	err := evaluateService.RestoreEvaluate(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

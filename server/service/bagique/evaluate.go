@@ -17,8 +17,12 @@ func (evaluateService *EvaluateService) CreateEvaluate(evaluate *bagique.Evaluat
 
 // DeleteEvaluate 删除估价信息记录
 // Author [yourname](https://github.com/yourname)
-func (evaluateService *EvaluateService) DeleteEvaluate(ID string) (err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Evaluate{}, "id = ?", ID).Error
+func (evaluateService *EvaluateService) DeleteEvaluate(ID string, TYPE string) (err error) {
+	if TYPE == "HARD" {
+		err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Delete(&bagique.Evaluate{}, "id = ?", ID).Error
+	} else {
+		err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Evaluate{}, "id = ?", ID).Error
+	}
 	return err
 }
 
@@ -52,6 +56,9 @@ func (evaluateService *EvaluateService) GetEvaluateInfoList(info bagiqueReq.Eval
 	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{})
 	var evaluates []bagique.Evaluate
 	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.IsRemove != nil && *info.IsRemove == true {
+		db = db.Unscoped()
+	}
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -109,4 +116,11 @@ func (evaluateService *EvaluateService) GetEvaluateDataSource() (res map[string]
 func (evaluateService *EvaluateService) GetEvaluatePublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现
+}
+
+// RestoreEvaluate 恢复单条evaluate的数据，也就是将deleted_at设置为null
+// Author [yourname](https://github.com/yourname)
+func (evaluateService *EvaluateService) RestoreEvaluate(ID string) (err error) {
+	err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Model(&bagique.Evaluate{}).Where("id = ?", ID).Update("deleted_at", nil).Error
+	return err
 }

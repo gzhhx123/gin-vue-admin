@@ -31,7 +31,9 @@
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
-
+        <el-form-item label="显示已删除" prop="isRemove">
+          <el-switch v-model="searchInfo.isRemove" />
+        </el-form-item>
         <template v-if="showAllQuery">
           <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
         </template>
@@ -42,6 +44,7 @@
           <el-button link type="primary" icon="arrow-down" @click="showAllQuery=true" v-if="!showAllQuery">展开</el-button>
           <el-button link type="primary" icon="arrow-up" @click="showAllQuery=false" v-else>收起</el-button>
         </el-form-item>
+        <div>实时汇率:{{rate.rate}} 更新时间:{{formatDate(rate.time)}}</div>
       </el-form>
     </div>
     <div class="gva-table-box">
@@ -76,29 +79,18 @@
          </el-table-column>
           <el-table-column sortable align="left" label="产品名称" prop="productName" width="120" />
           <el-table-column sortable align="left" label="产品sku" prop="productSku" width="120" />
-          <el-table-column sortable align="left" label="参考价（Min）" prop="referPriceMin" width="180" >
+          <el-table-column align="left" label="参考价" width="360" >
             <template #default="scope">
-              <div>
-                {{ scope.row.referPriceMin }}$
-              </div>
-              <div>
-                {{ scope.row.referPriceMin*7.1 }}￥(7.1)
-              </div>
-              <div>
-                {{ scope.row.referPriceMin*rate }}￥({{rate}})
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column sortable align="left" label="参考价（Max）" prop="referPriceMax" width="180" >
-            <template #default="scope">
-              <div>
-                {{ scope.row.referPriceMax }}$
-              </div>
-              <div>
-                {{ scope.row.referPriceMax*7.1 }}￥(7.1)
-              </div>
-              <div>
-                {{ scope.row.referPriceMax*rate }}￥({{rate}})
+              <div v-if="scope.row.referPriceMin!==0&&scope.row.referPriceMax!==0">
+                <div>
+                  {{ (scope.row.referPriceMin).toFixed(2) }}~{{ (scope.row.referPriceMax).toFixed(2) }}$【美金】
+                </div>
+                <div>
+                  {{ (scope.row.referPriceMin*scope.row.rate).toFixed(2) }}~{{ (scope.row.referPriceMax*scope.row.rate).toFixed(2) }}￥【填写汇率】{{scope.row.rate}}
+                </div>
+                <div>
+                  {{ (scope.row.referPriceMin * rate.rate).toFixed(2) }}~{{ (scope.row.referPriceMax * rate.rate).toFixed(2) }}￥【实时汇率】{{ rate.rate.toFixed(2) }}
+                </div>
               </div>
             </template>
           </el-table-column>
@@ -114,7 +106,8 @@
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
             <el-button  type="primary" link icon="edit" class="table-button" @click="updateProductFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+            <el-button  type="primary" link icon="edit" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -153,11 +146,36 @@
             <el-form-item label="产品sku:"  prop="productSku" >
               <el-input v-model="formData.productSku" :clearable="true"  placeholder="请输入产品sku" />
             </el-form-item>
+            <div>实时汇率:{{rate.rate}} 更新时间:{{formatDate(rate.time)}}</div>
+            <el-form-item label="美元汇率:"  prop="rate" class="mt-2">
+              <el-input-number v-model="formData.rate"  style="width:100%" :precision="2" :step="0.01" :clearable="true"  >
+                <template #prefix>
+                  <span class="invisible">美金/人民币</span>
+                </template>
+                <template #suffix>
+                  <span>美金/人民币</span>
+                </template>
+              </el-input-number>
+            </el-form-item>
             <el-form-item label="参考价（Min）:"  prop="referPriceMin" >
-              <el-input-number v-model="formData.referPriceMin"  style="width:100%" :precision="2" :clearable="true"  />
+              <el-input-number v-model="formData.referPriceMin"  style="width:100%" :precision="2" :clearable="true" >
+                <template #prefix>
+                  <span class="invisible">美金</span>
+                </template>
+                <template #suffix>
+                  <span>美金</span>
+                </template>
+              </el-input-number>
             </el-form-item>
             <el-form-item label="参考价（Max）:"  prop="referPriceMax" >
-              <el-input-number v-model="formData.referPriceMax"  style="width:100%" :precision="2" :clearable="true"  />
+              <el-input-number v-model="formData.referPriceMax"  style="width:100%" :precision="2" :clearable="true"  >
+                <template #prefix>
+                  <span class="invisible">美金</span>
+                </template>
+                <template #suffix>
+                  <span>美金</span>
+                </template>
+              </el-input-number>
             </el-form-item>
             <el-form-item label="参考图片:"  prop="referPics" >
                 <SelectImage
@@ -183,27 +201,21 @@
                     <el-descriptions-item label="产品sku">
                         {{ detailFrom.productSku }}
                     </el-descriptions-item>
-                    <el-descriptions-item label="参考价（Min）">
-                      <div>
-                        {{ detailFrom.referPriceMin }}$
-                      </div>
-                      <div>
-                        {{ detailFrom.referPriceMin*7.1 }}￥(7.1)
-                      </div>
-                      <div>
-                        {{ detailFrom.referPriceMin*7.15 }}￥(7.15)
+                    <el-descriptions-item label="参考价">
+                      <div v-if="detailFrom.referPriceMin!==0&&detailFrom.referPriceMax!==0">
+                        <div>
+                          {{ (detailFrom.referPriceMin).toFixed(2) }}~{{ (detailFrom.referPriceMax).toFixed(2) }}$【美金】
+                        </div>
+                        <div>
+                          {{ (detailFrom.referPriceMin*detailFrom.rate).toFixed(2) }}~{{ (detailFrom.referPriceMax*detailFrom.rate).toFixed(2) }}￥【填写汇率】{{detailFrom.rate}}
+                        </div>
+                        <div>
+                          {{ (detailFrom.referPriceMin * rate.rate).toFixed(2) }}~{{ (detailFrom.referPriceMax * rate.rate).toFixed(2) }}￥【实时汇率】{{ rate.rate.toFixed(2) }}
+                        </div>
                       </div>
                     </el-descriptions-item>
-                    <el-descriptions-item label="参考价（Max）">
-                      <div>
-                        {{ detailFrom.referPriceMax }}$
-                      </div>
-                      <div>
-                        {{ detailFrom.referPriceMax*7.1 }}￥(7.1)
-                      </div>
-                      <div>
-                        {{ detailFrom.referPriceMax*7.15 }}￥(7.15)
-                      </div>
+                    <el-descriptions-item label="美元汇率">
+                      {{detailFrom.rate}}
                     </el-descriptions-item>
                     <el-descriptions-item label="参考图片">
                             <el-image style="width: 50px; height: 50px; margin-right: 10px" :preview-src-list="returnArrImg(detailFrom.referPics)" :initial-index="index" v-for="(item,index) in detailFrom.referPics" :key="index" :src="getUrl(item)" fit="cover" />
@@ -224,15 +236,15 @@
 </template>
 
 <script setup>
-import {
+  import {
     getProductDataSource,
-  createProduct,
-  deleteProduct,
-  deleteProductByIds,
-  updateProduct,
-  findProduct,
-  getProductList
-} from '@/api/bagique/product'
+    createProduct,
+    deleteProduct,
+    deleteProductByIds,
+    updateProduct,
+    findProduct,
+    getProductList, restoreProduct
+  } from '@/api/bagique/product'
 import { getRate } from '@/api/bagique/common'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
@@ -265,6 +277,7 @@ const formData = ref({
             productSku: '',
             referPriceMin: 0,
             referPriceMax: 0,
+            rate:0,
             referPics: [],
             remark: '',
         })
@@ -303,6 +316,38 @@ const rule = reactive({
                    trigger: ['input', 'blur'],
               }
               ],
+              referPriceMin: [
+                {
+                  validator: (rule, value, callback) => {
+                    if (value !== undefined && formData.value.referPriceMax !== undefined) {
+                      if (value > formData.value.referPriceMax) {
+                        callback(new Error('参考价（Min）必须小于等于参考价（Max）'))
+                      } else {
+                        callback()
+                      }
+                    } else {
+                      callback()
+                    }
+                  },
+                  trigger: ['input', 'blur']
+                }
+              ],
+              referPriceMax: [
+                {
+                  validator: (rule, value, callback) => {
+                    if (formData.value.referPriceMin !== undefined && value !== undefined) {
+                      if (value < formData.value.referPriceMin) {
+                        callback(new Error('参考价（Max）必须大于等于参考价（Min）'))
+                      } else {
+                        callback()
+                      }
+                    } else {
+                      callback()
+                    }
+                  },
+                  trigger: ['input', 'blur']
+                }
+              ]
 })
 
 const searchRule = reactive({
@@ -330,7 +375,10 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
-const rate = ref(0)
+const rate = ref({
+  rate: 0,
+  time: ''
+})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
@@ -396,7 +444,8 @@ const getTableData = async() => {
 const getRateData = async () => {
   const res = await getRate({})
   if (res.code === 0) {
-    rate.value = res.data.rate
+    rate.value = res.data
+    formData.value.rate = res.data.rate
   }
 }
 
@@ -422,12 +471,24 @@ const handleSelectionChange = (val) => {
 
 // 删除行
 const deleteRow = (row) => {
-    ElMessageBox.confirm('确定要删除吗?', '提示', {
+  const tips = row.DeletedAt ? '确定要彻底删除吗?' : '确定要删除吗?'
+    ElMessageBox.confirm(tips, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
     }).then(() => {
             deleteProductFunc(row)
+        })
+    }
+
+// 恢复行
+const restoreRow = (row) => {
+    ElMessageBox.confirm('确定要恢复吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+    }).then(() => {
+            restoreProductFunc(row)
         })
     }
 
@@ -480,16 +541,29 @@ const updateProductFunc = async(row) => {
 
 // 删除行
 const deleteProductFunc = async (row) => {
-    const res = await deleteProduct({ ID: row.ID })
+    const res = await deleteProduct({ ID: row.ID,TYPE:row.DeletedAt?'HARD':'SOFT' })
+    const tips = row.DeletedAt ? '彻底删除成功' : '删除成功'
     if (res.code === 0) {
         ElMessage({
                 type: 'success',
-                message: '删除成功'
+                message: tips
             })
             if (tableData.value.length === 1 && page.value > 1) {
             page.value--
         }
         getTableData()
+    }
+}
+
+// 恢复行
+const restoreProductFunc = async (row) => {
+    const res = await restoreProduct({ ID: row.ID })
+    if (res.code === 0) {
+        ElMessage({
+                type: 'success',
+                message: '恢复成功'
+            })
+            getTableData()
     }
 }
 
@@ -500,6 +574,7 @@ const dialogFormVisible = ref(false)
 const openDialog = () => {
     type.value = 'create'
     dialogFormVisible.value = true
+    getRateData()
 }
 
 // 关闭弹窗
@@ -511,6 +586,7 @@ const closeDialog = () => {
         productSku: '',
         referPriceMin: 0,
         referPriceMax: 0,
+        rate:0,
         referPics: [],
         remark: '',
         }

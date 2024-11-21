@@ -7,6 +7,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strings"
 )
 
 type ProductApi struct{}
@@ -30,6 +31,10 @@ func (productApi *ProductApi) CreateProduct(c *gin.Context) {
 	err = productService.CreateProduct(&product)
 	if err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
+		if strings.Contains(err.Error(), "Error 1062") {
+			response.FailWithMessage("创建失败:产品sku已存在", c)
+			return
+		}
 		response.FailWithMessage("创建失败:"+err.Error(), c)
 		return
 	}
@@ -47,7 +52,8 @@ func (productApi *ProductApi) CreateProduct(c *gin.Context) {
 // @Router /product/deleteProduct [delete]
 func (productApi *ProductApi) DeleteProduct(c *gin.Context) {
 	ID := c.Query("ID")
-	err := productService.DeleteProduct(ID)
+	TYPE := c.Query("TYPE")
+	err := productService.DeleteProduct(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -183,4 +189,23 @@ func (productApi *ProductApi) GetProductPublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的产品信息接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreProduct 恢复单条product的数据，也就是将deleted_at设置为null
+// @Tags Product
+// @Summary 恢复单条product的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.ProductSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /product/restoreProduct [PUT]
+func (productApi *ProductApi) RestoreProduct(c *gin.Context) {
+	ID := c.Query("ID")
+	err := productService.RestoreProduct(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

@@ -121,3 +121,17 @@ export const getProductPublic = () => {
     method: 'get',
   })
 }
+// RestoreProduct 恢复单条product的数据，也就是将deleted_at设置为null
+// @Tags Product
+// @Summary 恢复单条product的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /product/restoreProduct [PUT]
+export const restoreProduct = (params) => {
+  return service({
+    url: '/product/restoreProduct',
+    method: 'PUT',
+    params
+  })
+}

@@ -10,12 +10,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type CommonApi struct{}
 
 type Rate struct {
-	Rate float64 `json:"rate"`
+	Rate float64   `json:"rate"`
+	Time time.Time `json:"time"`
 }
 
 type Cur struct {
@@ -87,6 +89,9 @@ func (commonApi *CommonApi) GetRate(c *gin.Context) {
 		response.FailWithMessage("调用失败,价格转换错误"+err.Error(), c)
 		return
 	}
-	rate := Rate{Rate: price}
+	//保留两位小数
+	price = price * 100
+	price = float64(int(price+0.5)) / 100
+	rate := Rate{Rate: price, Time: time.Now()}
 	response.OkWithData(rate, c)
 }

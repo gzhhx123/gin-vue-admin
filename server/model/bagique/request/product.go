@@ -11,6 +11,7 @@ type ProductSearch struct {
 	BrandId        *int       `json:"brandId" form:"brandId" `
 	ProductName    *string    `json:"productName" form:"productName" `
 	ProductSku     *string    `json:"productSku" form:"productSku" `
+	IsRemove       *bool      `json:"isRemove" form:"isRemove" `
 	Remark         *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

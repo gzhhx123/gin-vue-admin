@@ -17,8 +17,12 @@ func (companyService *CompanyService) CreateCompany(company *bagique.Company) (e
 
 // DeleteCompany 删除公司信息记录
 // Author [yourname](https://github.com/yourname)
-func (companyService *CompanyService) DeleteCompany(ID string) (err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Company{}, "id = ?", ID).Error
+func (companyService *CompanyService) DeleteCompany(ID string, TYPE string) (err error) {
+	if TYPE == "HARD" {
+		err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Delete(&bagique.Company{}, "id = ?", ID).Error
+	} else {
+		err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Company{}, "id = ?", ID).Error
+	}
 	return err
 }
 
@@ -52,6 +56,9 @@ func (companyService *CompanyService) GetCompanyInfoList(info bagiqueReq.Company
 	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Company{})
 	var companys []bagique.Company
 	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.IsRemove != nil && *info.IsRemove == true {
+		db = db.Unscoped()
+	}
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -70,6 +77,7 @@ func (companyService *CompanyService) GetCompanyInfoList(info bagiqueReq.Company
 	}
 	var OrderStr string
 	orderMap := make(map[string]bool)
+	orderMap["created_at"] = true
 	orderMap["company_name"] = true
 	orderMap["company_short_name"] = true
 	orderMap["company_logo"] = true
@@ -92,4 +100,11 @@ func (companyService *CompanyService) GetCompanyInfoList(info bagiqueReq.Company
 func (companyService *CompanyService) GetCompanyPublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现
+}
+
+// RestoreCompany 恢复单条company的数据，也就是将deleted_at设置为null
+// Author [yourname](https://github.com/yourname)
+func (companyService *CompanyService) RestoreCompany(ID string) (err error) {
+	err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Model(&bagique.Company{}).Where("id = ?", ID).Update("deleted_at", nil).Error
+	return err
 }

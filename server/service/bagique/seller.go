@@ -17,8 +17,12 @@ func (sellerService *SellerService) CreateSeller(seller *bagique.Seller) (err er
 
 // DeleteSeller 删除卖家信息记录
 // Author [yourname](https://github.com/yourname)
-func (sellerService *SellerService) DeleteSeller(ID string) (err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Seller{}, "id = ?", ID).Error
+func (sellerService *SellerService) DeleteSeller(ID string, TYPE string) (err error) {
+	if TYPE == "HARD" {
+		err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Delete(&bagique.Seller{}, "id = ?", ID).Error
+	} else {
+		err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Seller{}, "id = ?", ID).Error
+	}
 	return err
 }
 
@@ -52,6 +56,9 @@ func (sellerService *SellerService) GetSellerInfoList(info bagiqueReq.SellerSear
 	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Seller{})
 	var sellers []bagique.Seller
 	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.IsRemove != nil && *info.IsRemove == true {
+		db = db.Unscoped()
+	}
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -70,6 +77,7 @@ func (sellerService *SellerService) GetSellerInfoList(info bagiqueReq.SellerSear
 	}
 	var OrderStr string
 	orderMap := make(map[string]bool)
+	orderMap["created_at"] = true
 	orderMap["seller_name"] = true
 	orderMap["seller_platform_code"] = true
 	orderMap["remark"] = true
@@ -91,4 +99,11 @@ func (sellerService *SellerService) GetSellerInfoList(info bagiqueReq.SellerSear
 func (sellerService *SellerService) GetSellerPublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现
+}
+
+// RestoreSeller 恢复单条seller的数据，也就是将deleted_at设置为null
+// Author [yourname](https://github.com/yourname)
+func (sellerService *SellerService) RestoreSeller(ID string) (err error) {
+	err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Model(&bagique.Seller{}).Where("id = ?", ID).Update("deleted_at", nil).Error
+	return err
 }

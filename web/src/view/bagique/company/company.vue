@@ -26,7 +26,9 @@
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
-
+        <el-form-item label="显示已删除" prop="isRemove">
+          <el-switch v-model="searchInfo.isRemove" />
+        </el-form-item>
         <template v-if="showAllQuery">
           <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
         </template>
@@ -57,16 +59,16 @@
         @sort-change="sortChange"
         >
         <el-table-column type="selection" width="55" />
-        
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+
+          <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
-        </el-table-column>
+          </el-table-column>
         
           <el-table-column sortable align="left" label="公司名称" prop="companyName" width="120" />
           <el-table-column sortable align="left" label="公司简称" prop="companyShortName" width="120" />
           <el-table-column label="公司logo" prop="companyLogo" width="200">
               <template #default="scope">
-                <el-image preview-teleported style="width: 100px; height: 100px" :src="getUrl(scope.row.companyLogo)" fit="cover"/>
+                <el-image preview-teleported v-if="getUrl(scope.row.companyLogo)" style="width: 100px; height: 100px" :src="getUrl(scope.row.companyLogo)" fit="cover"/>
               </template>
           </el-table-column>
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
@@ -74,7 +76,8 @@
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
             <el-button  type="primary" link icon="edit" class="table-button" @click="updateCompanyFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+            <el-button  type="primary" link icon="edit" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -134,6 +137,12 @@
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
                     </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
+                    </el-descriptions-item>
             </el-descriptions>
         </el-drawer>
 
@@ -147,7 +156,8 @@ import {
   deleteCompanyByIds,
   updateCompany,
   findCompany,
-  getCompanyList
+  getCompanyList,
+  restoreCompany
 } from '@/api/bagique/company'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
@@ -226,6 +236,7 @@ const searchInfo = ref({})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
+            CreatedAt: 'created_at',
             companyName: 'company_name',
             companyShortName: 'company_short_name',
             companyLogo: 'company_logo',
@@ -302,7 +313,8 @@ const handleSelectionChange = (val) => {
 
 // 删除行
 const deleteRow = (row) => {
-    ElMessageBox.confirm('确定要删除吗?', '提示', {
+  const tips = row.DeletedAt ? '确定要彻底删除吗?' : '确定要删除吗?'
+    ElMessageBox.confirm(tips, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -310,6 +322,17 @@ const deleteRow = (row) => {
             deleteCompanyFunc(row)
         })
     }
+
+// 恢复行
+const restoreRow = (row) => {
+  ElMessageBox.confirm('确定要恢复吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    restoreCompanyFunc(row)
+  })
+}
 
 // 多选删除
 const onDelete = async() => {
@@ -360,17 +383,30 @@ const updateCompanyFunc = async(row) => {
 
 // 删除行
 const deleteCompanyFunc = async (row) => {
-    const res = await deleteCompany({ ID: row.ID })
+    const res = await deleteCompany({ ID: row.ID, TYPE: row.DeletedAt ? 'HARD' : 'SOFT' })
+    const tips = row.DeletedAt ? '彻底删除成功' : '删除成功'
     if (res.code === 0) {
-        ElMessage({
-                type: 'success',
-                message: '删除成功'
-            })
-            if (tableData.value.length === 1 && page.value > 1) {
-            page.value--
-        }
-        getTableData()
+      ElMessage({
+        type: 'success',
+        message: tips
+      })
+      if (tableData.value.length === 1 && page.value > 1) {
+        page.value--
+      }
+      getTableData()
     }
+}
+
+// 恢复行
+const restoreCompanyFunc = async (row) => {
+  const res = await restoreCompany({ ID: row.ID })
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '恢复成功'
+    })
+    getTableData()
+  }
 }
 
 // 弹窗控制标记

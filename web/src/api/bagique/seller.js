@@ -108,3 +108,17 @@ export const getSellerPublic = () => {
     method: 'get',
   })
 }
+// RestoreSeller 恢复单条seller的数据，也就是将deleted_at设置为null
+// @Tags Seller
+// @Summary 恢复单条seller的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /seller/restoreSeller [PUT]
+export const restoreSeller = (params) => {
+  return service({
+    url: '/seller/restoreSeller',
+    method: 'PUT',
+    params
+  })
+}

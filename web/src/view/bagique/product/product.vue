@@ -382,6 +382,7 @@ const rate = ref({
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
+            CreatedAt: 'created_at',
             brandId: 'brand_id',
             productName: 'product_name',
             productSku: 'product_sku',

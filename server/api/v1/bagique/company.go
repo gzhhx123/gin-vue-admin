@@ -47,7 +47,8 @@ func (companyApi *CompanyApi) CreateCompany(c *gin.Context) {
 // @Router /company/deleteCompany [delete]
 func (companyApi *CompanyApi) DeleteCompany(c *gin.Context) {
 	ID := c.Query("ID")
-	err := companyService.DeleteCompany(ID)
+	TYPE := c.Query("TYPE")
+	err := companyService.DeleteCompany(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -165,4 +166,23 @@ func (companyApi *CompanyApi) GetCompanyPublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的公司信息接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreCompany 恢复单条company的数据，也就是将deleted_at设置为null
+// @Tags Company
+// @Summary 恢复单条company的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.CompanySearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /company/restoreCompany [PUT]
+func (companyApi *CompanyApi) RestoreCompany(c *gin.Context) {
+	ID := c.Query("ID")
+	err := companyService.RestoreCompany(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

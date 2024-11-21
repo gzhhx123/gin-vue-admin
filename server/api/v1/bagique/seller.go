@@ -47,7 +47,8 @@ func (sellerApi *SellerApi) CreateSeller(c *gin.Context) {
 // @Router /seller/deleteSeller [delete]
 func (sellerApi *SellerApi) DeleteSeller(c *gin.Context) {
 	ID := c.Query("ID")
-	err := sellerService.DeleteSeller(ID)
+	TYPE := c.Query("TYPE")
+	err := sellerService.DeleteSeller(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -165,4 +166,23 @@ func (sellerApi *SellerApi) GetSellerPublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的卖家信息接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreSeller 恢复单条seller的数据，也就是将deleted_at设置为null
+// @Tags Seller
+// @Summary 恢复单条seller的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.SellerSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /seller/restoreSeller [PUT]
+func (sellerApi *SellerApi) RestoreSeller(c *gin.Context) {
+	ID := c.Query("ID")
+	err := sellerService.RestoreSeller(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

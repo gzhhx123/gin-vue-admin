@@ -26,7 +26,9 @@
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
-
+        <el-form-item label="显示已删除" prop="isRemove">
+          <el-switch v-model="searchInfo.isRemove" />
+        </el-form-item>
         <template v-if="showAllQuery">
           <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
         </template>
@@ -57,10 +59,10 @@
         @sort-change="sortChange"
         >
         <el-table-column type="selection" width="55" />
-        
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+
+          <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
-        </el-table-column>
+          </el-table-column>
         
           <el-table-column sortable align="left" label="卖家名称" prop="sellerName" width="120" />
           <el-table-column sortable align="left" label="卖家平台id" prop="sellerPlatformCode" width="120" />
@@ -69,7 +71,8 @@
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
             <el-button  type="primary" link icon="edit" class="table-button" @click="updateSellerFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+            <el-button  type="primary" link icon="edit" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -120,6 +123,12 @@
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
                     </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
+                    </el-descriptions-item>
             </el-descriptions>
         </el-drawer>
 
@@ -127,14 +136,14 @@
 </template>
 
 <script setup>
-import {
-  createSeller,
-  deleteSeller,
-  deleteSellerByIds,
-  updateSeller,
-  findSeller,
-  getSellerList
-} from '@/api/bagique/seller'
+  import {
+    createSeller,
+    deleteSeller,
+    deleteSellerByIds,
+    updateSeller,
+    findSeller,
+    getSellerList, restoreSeller
+  } from '@/api/bagique/seller'
 
 // 全量引入格式化工具 请按需保留
 import { getDictFunc, formatDate, formatBoolean, filterDict ,filterDataSource, returnArrImg, onDownloadFile } from '@/utils/format'
@@ -208,6 +217,7 @@ const searchInfo = ref({})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
+            CreatedAt: 'created_at',
             sellerName: 'seller_name',
             sellerPlatformCode: 'seller_platform_code',
             remark: 'remark',
@@ -283,7 +293,8 @@ const handleSelectionChange = (val) => {
 
 // 删除行
 const deleteRow = (row) => {
-    ElMessageBox.confirm('确定要删除吗?', '提示', {
+  const tips = row.DeletedAt ? '确定要彻底删除吗?' : '确定要删除吗?'
+    ElMessageBox.confirm(tips, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -291,6 +302,17 @@ const deleteRow = (row) => {
             deleteSellerFunc(row)
         })
     }
+
+// 恢复行
+const restoreRow = (row) => {
+  ElMessageBox.confirm('确定要恢复吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    restoreSellerFunc(row)
+  })
+}
 
 // 多选删除
 const onDelete = async() => {
@@ -341,17 +363,30 @@ const updateSellerFunc = async(row) => {
 
 // 删除行
 const deleteSellerFunc = async (row) => {
-    const res = await deleteSeller({ ID: row.ID })
+    const res = await deleteSeller({ ID: row.ID, TYPE: row.DeletedAt ? 'HARD' : 'SOFT' })
+    const tips = row.DeletedAt ? '彻底删除成功' : '删除成功'
     if (res.code === 0) {
-        ElMessage({
-                type: 'success',
-                message: '删除成功'
-            })
-            if (tableData.value.length === 1 && page.value > 1) {
-            page.value--
-        }
-        getTableData()
+      ElMessage({
+        type: 'success',
+        message: tips
+      })
+      if (tableData.value.length === 1 && page.value > 1) {
+        page.value--
+      }
+      getTableData()
     }
+}
+
+// 恢复行
+const restoreSellerFunc = async (row) => {
+  const res = await restoreSeller({ ID: row.ID })
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '恢复成功'
+    })
+    getTableData()
+  }
 }
 
 // 弹窗控制标记

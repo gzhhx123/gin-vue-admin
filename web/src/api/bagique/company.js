@@ -108,3 +108,17 @@ export const getCompanyPublic = () => {
     method: 'get',
   })
 }
+// RestoreCompany 恢复单条company的数据，也就是将deleted_at设置为null
+// @Tags Company
+// @Summary 恢复单条company的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /company/restoreCompany [PUT]
+export const restoreCompany = (params) => {
+  return service({
+    url: '/company/restoreCompany',
+    method: 'PUT',
+    params
+  })
+}

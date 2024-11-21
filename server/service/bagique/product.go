@@ -80,6 +80,7 @@ func (productService *ProductService) GetProductInfoList(info bagiqueReq.Product
 	}
 	var OrderStr string
 	orderMap := make(map[string]bool)
+	orderMap["created_at"] = true
 	orderMap["brand_id"] = true
 	orderMap["product_name"] = true
 	orderMap["product_sku"] = true

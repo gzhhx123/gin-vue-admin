@@ -10,6 +10,7 @@ type SellerSearch struct {
 	EndCreatedAt       *time.Time `json:"endCreatedAt" form:"endCreatedAt"`
 	SellerName         *string    `json:"sellerName" form:"sellerName" `
 	SellerPlatformCode *string    `json:"sellerPlatformCode" form:"sellerPlatformCode" `
+	IsRemove           *bool      `json:"isRemove" form:"isRemove" `
 	Remark             *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

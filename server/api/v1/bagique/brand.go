@@ -47,7 +47,8 @@ func (brandApi *BrandApi) CreateBrand(c *gin.Context) {
 // @Router /brand/deleteBrand [delete]
 func (brandApi *BrandApi) DeleteBrand(c *gin.Context) {
 	ID := c.Query("ID")
-	err := brandService.DeleteBrand(ID)
+	TYPE := c.Query("TYPE")
+	err := brandService.DeleteBrand(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -165,4 +166,23 @@ func (brandApi *BrandApi) GetBrandPublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的品牌信息接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreBrand 恢复单条brand的数据，也就是将deleted_at设置为null
+// @Tags Brand
+// @Summary 恢复单条brand的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.BrandSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /brand/restoreBrand [PUT]
+func (brandApi *BrandApi) RestoreBrand(c *gin.Context) {
+	ID := c.Query("ID")
+	err := brandService.RestoreBrand(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

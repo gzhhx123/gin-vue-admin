@@ -108,3 +108,17 @@ export const getBrandPublic = () => {
     method: 'get',
   })
 }
+// RestoreBrand 恢复单条brand的数据，也就是将deleted_at设置为null
+// @Tags Brand
+// @Summary 恢复单条brand的数据，也就是将deleted_at设置为null
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /brand/restoreBrand [PUT]
+export const restoreBrand = (params) => {
+  return service({
+    url: '/brand/restoreBrand',
+    method: 'PUT',
+    params
+  })
+}

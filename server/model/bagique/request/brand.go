@@ -10,6 +10,7 @@ type BrandSearch struct {
 	EndCreatedAt   *time.Time `json:"endCreatedAt" form:"endCreatedAt"`
 	BrandName      *string    `json:"brandName" form:"brandName" `
 	BrandShortName *string    `json:"brandShortName" form:"brandShortName" `
+	IsRemove       *bool      `json:"isRemove" form:"isRemove" `
 	Remark         *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

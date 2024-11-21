@@ -17,8 +17,12 @@ func (brandService *BrandService) CreateBrand(brand *bagique.Brand) (err error) 
 
 // DeleteBrand 删除品牌信息记录
 // Author [yourname](https://github.com/yourname)
-func (brandService *BrandService) DeleteBrand(ID string) (err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Brand{}, "id = ?", ID).Error
+func (brandService *BrandService) DeleteBrand(ID string, TYPE string) (err error) {
+	if TYPE == "HARD" {
+		err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Delete(&bagique.Brand{}, "id = ?", ID).Error
+	} else {
+		err = global.MustGetGlobalDBByDBName("bagique").Delete(&bagique.Brand{}, "id = ?", ID).Error
+	}
 	return err
 }
 
@@ -52,6 +56,9 @@ func (brandService *BrandService) GetBrandInfoList(info bagiqueReq.BrandSearch) 
 	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Brand{})
 	var brands []bagique.Brand
 	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.IsRemove != nil && *info.IsRemove == true {
+		db = db.Unscoped()
+	}
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -93,4 +100,11 @@ func (brandService *BrandService) GetBrandInfoList(info bagiqueReq.BrandSearch) 
 func (brandService *BrandService) GetBrandPublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现
+}
+
+// RestoreBrand 恢复单条brand的数据，也就是将deleted_at设置为null
+// Author [yourname](https://github.com/yourname)
+func (brandService *BrandService) RestoreBrand(ID string) (err error) {
+	err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Model(&bagique.Brand{}).Where("id = ?", ID).Update("deleted_at", nil).Error
+	return err
 }

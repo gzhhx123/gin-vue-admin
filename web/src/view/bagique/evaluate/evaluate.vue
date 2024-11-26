@@ -185,6 +185,11 @@
                     <el-input-number v-model="scope.row.price" placeholder="请输入估价" :precision="2" :clearable="true"  />
                   </template>
                 </el-table-column>
+                <el-table-column label="备注" align="center">
+                  <template #default="scope">
+                    <el-input v-model="scope.row.remark" :clearable="true"  placeholder="请输入备注" />
+                  </template>
+                </el-table-column>
                 <el-table-column align="center">
                   <template #default="scope">
                     <el-button type="danger" icon="delete" @click="() => formData.evaluatePrices.splice(scope.$index, 1)">
@@ -632,6 +637,7 @@ const addEvaluatePrice = () => {
     companyId: undefined,
     price: 0,
     fee: 0,
+    remark:''
   })
 }
 

@@ -36,14 +36,64 @@ func (evaluateService *EvaluateService) DeleteEvaluateByIds(IDs []string) (err e
 // UpdateEvaluate 更新估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) UpdateEvaluate(evaluate bagique.Evaluate) (err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{}).Where("id = ?", evaluate.ID).Updates(&evaluate).Error
-	return err
+	tx := global.MustGetGlobalDBByDBName("bagique").Begin()
+	//更新估价主记录
+	err = tx.Model(&bagique.Evaluate{}).Where("id = ?", evaluate.ID).Updates(&evaluate).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	//更新公司估价记录
+	//1.获取数据库已存在数据
+	var evaluatePrices []bagique.EvaluatePrice
+	err = tx.Where("evaluate_id = ?", evaluate.ID).Find(&evaluatePrices).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	//2.构建ID映射方便比对
+	existingMap := make(map[uint]*bagique.EvaluatePrice)
+	for _, v := range evaluatePrices {
+		existingMap[v.ID] = &v
+	}
+	// 3. 遍历前端传递的数据 进行相应的操作
+	for _, v := range evaluate.EvaluatePrices {
+		if existingPrice, exists := existingMap[v.ID]; exists {
+			if existingPrice.CompanyId != v.CompanyId || existingPrice.Price != v.Price || existingPrice.Fee != v.Fee || existingPrice.Remark != v.Remark {
+				err = tx.Model(&bagique.EvaluatePrice{}).Where("id = ?", v.ID).Updates(&v).Error
+				if err != nil {
+					tx.Rollback()
+					return err
+				}
+			}
+			delete(existingMap, v.ID)
+		} else {
+			//新增
+			v.EvaluateId = new(int)
+			*v.EvaluateId = int(evaluate.ID)
+			err = tx.Create(&v).Error
+			if err != nil {
+				tx.Rollback()
+				return
+			}
+		}
+	}
+	//4.删除数据库中未前端未提交的数据
+	for k := range existingMap {
+		err = tx.Delete(&bagique.EvaluatePrice{}, "id = ?", k).Error
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+	}
+	tx.Commit()
+	return nil
 }
 
 // GetEvaluate 根据ID获取估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) GetEvaluate(ID string) (evaluate bagique.Evaluate, err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Where("id = ?", ID).First(&evaluate).Error
+	err = global.MustGetGlobalDBByDBName("bagique").Preload("EvaluatePrices").Where("id = ?", ID).First(&evaluate).Error
 	return
 }
 

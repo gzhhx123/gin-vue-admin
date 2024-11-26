@@ -1,9 +1,6 @@
-// 自动生成模板EvaluatePrice
 package bagique
 
-import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-)
+import "github.com/flipped-aurora/gin-vue-admin/server/global"
 
 // 公司估价 结构体  EvaluatePrice
 type EvaluatePrice struct {

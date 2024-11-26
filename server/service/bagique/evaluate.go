@@ -80,6 +80,7 @@ func (evaluateService *EvaluateService) GetEvaluateInfoList(info bagiqueReq.Eval
 	}
 	var OrderStr string
 	orderMap := make(map[string]bool)
+	orderMap["created_at"] = true
 	orderMap["product_id"] = true
 	orderMap["seller_id"] = true
 	orderMap["evaluate_pics"] = true
@@ -111,6 +112,10 @@ func (evaluateService *EvaluateService) GetEvaluateDataSource() (res map[string]
 
 	global.MustGetGlobalDBByDBName("bagique").Table("bagique_sellers").Where("deleted_at IS NULL").Select("seller_name as label,id as value").Scan(&sellerId)
 	res["sellerId"] = sellerId
+	companyId := make([]map[string]any, 0)
+
+	global.MustGetGlobalDBByDBName("bagique").Table("bagique_companies").Where("deleted_at IS NULL").Select("company_name as label,id as value").Scan(&companyId)
+	res["companyId"] = companyId
 	return
 }
 func (evaluateService *EvaluateService) GetEvaluatePublic() {

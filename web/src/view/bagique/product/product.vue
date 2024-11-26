@@ -316,9 +316,26 @@ const rule = reactive({
                    trigger: ['input', 'blur'],
               }
               ],
+              rate: [
+                {
+                  validator: (rule, value, callback) => {
+                    //价格必须大于等于0
+                    if (value < 0) {
+                      callback(new Error('美元汇率不能小于0'))
+                    } else {
+                      callback()
+                    }
+                  },
+                  trigger: ['input', 'blur']
+                }
+              ],
               referPriceMin: [
                 {
                   validator: (rule, value, callback) => {
+                    //价格必须大于等于0
+                    if (value < 0) {
+                      callback(new Error('参考价（Min）不能小于0'))
+                    }
                     if (value !== undefined && formData.value.referPriceMax !== undefined) {
                       if (value > formData.value.referPriceMax) {
                         callback(new Error('参考价（Min）必须小于等于参考价（Max）'))
@@ -335,6 +352,10 @@ const rule = reactive({
               referPriceMax: [
                 {
                   validator: (rule, value, callback) => {
+                    //价格必须大于等于0
+                    if (value < 0) {
+                      callback(new Error('参考价（Max）不能小于0'))
+                    }
                     if (formData.value.referPriceMin !== undefined && value !== undefined) {
                       if (value < formData.value.referPriceMin) {
                         callback(new Error('参考价（Max）必须大于等于参考价（Min）'))

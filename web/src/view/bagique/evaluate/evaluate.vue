@@ -68,10 +68,10 @@
         @sort-change="sortChange"
         >
         <el-table-column type="selection" width="55" />
-        
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+
+          <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
-        </el-table-column>
+          </el-table-column>
         
         <el-table-column sortable align="left" label="产品" prop="productId" width="120">
           <template #default="scope">
@@ -155,6 +155,45 @@
                 <el-option v-for="(item,key) in evaluate_statusOptions" :key="key" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
+            <el-form-item label="估价信息:" prop="evaluatePrices">
+              <el-button type="primary" icon="edit" @click="addEvaluatePrice">
+                新增估价信息
+              </el-button>
+              <el-table :data="formData.evaluatePrices">
+                <el-table-column label="估价公司" align="center">
+                  <template #default="scope">
+                    <el-select
+                      v-model="scope.row.companyId"
+                      placeholder="请选择估价公司"
+                      :clearable="true">
+                      <el-option
+                        v-for="(item,key) in dataSource.companyId"
+                        :key="key"
+                        :disabled="formData.evaluatePrices.some((it) => it.companyId === item.value)"
+                        :label="item.label"
+                        :value="item.value"/>
+                    </el-select>
+                  </template>
+                </el-table-column>
+                <el-table-column label="估价费用" align="center">
+                  <template #default="scope">
+                    <el-input-number v-model="scope.row.fee" placeholder="请输入估价费用" :precision="2" :clearable="true"  />
+                  </template>
+                </el-table-column>
+                <el-table-column label="估价" align="center">
+                  <template #default="scope">
+                    <el-input-number v-model="scope.row.price" placeholder="请输入估价" :precision="2" :clearable="true"  />
+                  </template>
+                </el-table-column>
+                <el-table-column align="center">
+                  <template #default="scope">
+                    <el-button type="danger" icon="delete" @click="() => formData.evaluatePrices.splice(scope.$index, 1)">
+                      删除
+                    </el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-form-item>
             <el-form-item label="备注:"  prop="remark" >
               <el-input v-model="formData.remark" :clearable="true"  placeholder="请输入备注" />
             </el-form-item>
@@ -164,19 +203,25 @@
     <el-drawer destroy-on-close size="800" v-model="detailShow" :show-close="true" :before-close="closeDetailShow" title="查看">
             <el-descriptions :column="1" border>
                     <el-descriptions-item label="产品">
-                        {{ detailFrom.productId }}
+                      {{filterDataSource(dataSource.productId,detailFrom.productId)}}
                     </el-descriptions-item>
                     <el-descriptions-item label="卖家">
-                        {{ detailFrom.sellerId }}
+                      {{filterDataSource(dataSource.sellerId,detailFrom.sellerId)}}
                     </el-descriptions-item>
                     <el-descriptions-item label="细节图">
                             <el-image style="width: 50px; height: 50px; margin-right: 10px" :preview-src-list="returnArrImg(detailFrom.evaluatePics)" :initial-index="index" v-for="(item,index) in detailFrom.evaluatePics" :key="index" :src="getUrl(item)" fit="cover" />
                     </el-descriptions-item>
                     <el-descriptions-item label="估价状态">
-                        {{ detailFrom.status }}
+                      {{ filterDict(detailFrom.status,evaluate_statusOptions) }}
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
                     </el-descriptions-item>
             </el-descriptions>
         </el-drawer>
@@ -223,6 +268,7 @@ const evaluate_statusOptions = ref([])
 const formData = ref({
             productId: undefined,
             sellerId: undefined,
+            evaluatePrices: [],
             evaluatePics: [],
             status: '',
             remark: '',
@@ -269,6 +315,31 @@ const rule = reactive({
                    trigger: ['input', 'blur'],
               }
               ],
+              evaluatePrices: [
+                //companyId price fee
+                //companyId不能为空 price和fee要大于等于0
+                { validator: (rule, value, callback) => {
+                  if (value.length === 0) {
+                    callback(new Error('请至少添加一条估价信息'))
+                  } else {
+                    for (let i = 0; i < value.length; i++) {
+                      if (!value[i].companyId) {
+                        callback(new Error('请正确选择估价公司'))
+                        return
+                      }
+                      if (value[i].price < 0) {
+                        callback(new Error('估价不能小于0'))
+                        return
+                      }
+                      if (value[i].fee < 0) {
+                        callback(new Error('估价费用不能小于0'))
+                        return
+                      }
+                    }
+                    callback()
+                  }
+                }, required: true,trigger: ['input', 'blur'] }
+              ],
 })
 
 const searchRule = reactive({
@@ -299,6 +370,7 @@ const searchInfo = ref({})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
+            CreatedAt: 'created_at',
             productId: 'product_id',
             sellerId: 'seller_id',
             evaluatePics: 'evaluate_pics',
@@ -488,6 +560,7 @@ const closeDialog = () => {
     formData.value = {
         productId: undefined,
         sellerId: undefined,
+        evaluatePrices: [],
         evaluatePics: [],
         status: '',
         remark: '',
@@ -548,6 +621,18 @@ const getDetails = async (row) => {
 const closeDetailShow = () => {
   detailShow.value = false
   detailFrom.value = {}
+}
+
+// 新增估价信息
+const addEvaluatePrice = () => {
+  if(!formData.value.evaluatePrices){
+      formData.value.evaluatePrices = []
+  }
+  formData.value.evaluatePrices.push({
+    companyId: undefined,
+    price: 0,
+    fee: 0,
+  })
 }
 
 

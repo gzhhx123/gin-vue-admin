@@ -103,7 +103,7 @@ func (evaluateService *EvaluateService) GetEvaluateInfoList(info bagiqueReq.Eval
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
-	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{})
+	db := global.MustGetGlobalDBByDBName("bagique").Preload("EvaluatePrices").Model(&bagique.Evaluate{})
 	var evaluates []bagique.Evaluate
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.IsRemove != nil && *info.IsRemove == true {

@@ -48,6 +48,7 @@
           <el-button link type="primary" icon="arrow-down" @click="showAllQuery=true" v-if="!showAllQuery">展开</el-button>
           <el-button link type="primary" icon="arrow-up" @click="showAllQuery=false" v-else>收起</el-button>
         </el-form-item>
+        <div>实时汇率:{{rate.rate}} 更新时间:{{formatDate(rate.time)}}</div>
       </el-form>
     </div>
     <div class="gva-table-box">
@@ -69,11 +70,11 @@
         >
         <el-table-column type="selection" width="55" />
 
-          <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180">
+          <el-table-column sortable align="left" label="创建日期" prop="CreatedAt" width="180" fixed="left">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
           </el-table-column>
         
-        <el-table-column sortable align="left" label="产品" prop="productId" width="120">
+        <el-table-column sortable align="left" label="产品" prop="productId" width="120" fixed="left">
           <template #default="scope">
                 
                     <span>{{ filterDataSource(dataSource.productId,scope.row.productId) }}</span>
@@ -98,6 +99,31 @@
             <template #default="scope">
             {{ filterDict(scope.row.status,evaluate_statusOptions) }}
             </template>
+        </el-table-column>
+        <el-table-column label="公司估价" prop="evaluatePrices" align="center">
+          <el-table-column label="【格式】估价/估价费用" align="center">
+            <el-table-column v-for="(item,index) in dataSource.companyId" :key="index" :label="item.label" align="center" width="300">
+              <template #default="scope">
+                <div v-if="scope.row.evaluatePrices.some((it) => it.companyId === item.value)">
+                  <div>
+                    <span>{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).price).toFixed(2)}}$/{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).fee).toFixed(2)}}$【美金】</span>
+                  </div>
+                  <div>
+                    <span>{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).price*scope.row.rate).toFixed(2)}}￥/{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).fee*scope.row.rate).toFixed(2)}}￥【填写汇率】{{scope.row.rate}}</span>
+                  </div>
+                  <div>
+                    <span>{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).price*rate.rate).toFixed(2)}}￥/{{(getEvaluatePrice(scope.row.evaluatePrices,item.value).fee*rate.rate).toFixed(2)}}￥【实时汇率】{{rate.rate}}</span>
+                  </div>
+                  <div>
+                    <span>{{getEvaluatePrice(scope.row.evaluatePrices,item.value).remark}}</span>【备注】
+                  </div>
+                </div>
+                <div v-else>
+                  - -
+                </div>
+              </template>
+            </el-table-column>
+          </el-table-column>
         </el-table-column>
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
@@ -155,6 +181,17 @@
                 <el-option v-for="(item,key) in evaluate_statusOptions" :key="key" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
+            <div>实时汇率:{{rate.rate}} 更新时间:{{formatDate(rate.time)}}</div>
+            <el-form-item label="美元汇率:"  prop="rate" class="mt-2">
+              <el-input-number v-model="formData.rate"  style="width:100%" :precision="2" :step="0.01" :clearable="true"  >
+                <template #prefix>
+                  <span class="invisible">美金/人民币</span>
+                </template>
+                <template #suffix>
+                  <span>美金/人民币</span>
+                </template>
+              </el-input-number>
+            </el-form-item>
             <el-form-item label="估价信息:" prop="evaluatePrices">
               <el-button type="primary" icon="edit" @click="addEvaluatePrice">
                 新增估价信息
@@ -163,6 +200,7 @@
                 <el-table-column label="估价公司" align="center">
                   <template #default="scope">
                     <el-select
+                      style="width: 100%"
                       v-model="scope.row.companyId"
                       placeholder="请选择估价公司"
                       :clearable="true">
@@ -175,19 +213,19 @@
                     </el-select>
                   </template>
                 </el-table-column>
-                <el-table-column label="估价费用" align="center">
+                <el-table-column label="估价[美金]" align="center">
                   <template #default="scope">
-                    <el-input-number v-model="scope.row.fee" placeholder="请输入估价费用" :precision="2" :clearable="true"  />
+                    <el-input-number v-model="scope.row.price" style="width: 100%" placeholder="请输入估价" :precision="2" :clearable="true" :controls="false"  />
                   </template>
                 </el-table-column>
-                <el-table-column label="估价" align="center">
+                <el-table-column label="估价费用[美金]" align="center">
                   <template #default="scope">
-                    <el-input-number v-model="scope.row.price" placeholder="请输入估价" :precision="2" :clearable="true"  />
+                    <el-input-number v-model="scope.row.fee" style="width: 100%" placeholder="请输入估价费用" :precision="2" :clearable="true" :controls="false"   />
                   </template>
                 </el-table-column>
                 <el-table-column label="备注" align="center">
                   <template #default="scope">
-                    <el-input v-model="scope.row.remark" :clearable="true"  placeholder="请输入备注" />
+                    <el-input v-model="scope.row.remark" style="width: 100%" :clearable="true"  placeholder="请输入备注" />
                   </template>
                 </el-table-column>
                 <el-table-column align="center">
@@ -218,6 +256,38 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="估价状态">
                       {{ filterDict(detailFrom.status,evaluate_statusOptions) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="公司估价">
+                      <div class="flex justify-center">
+                        【格式】估价/估价费用
+                      </div>
+                      <div class="flex flex-wrap justify-around">
+                        <div v-for="(item,index) in dataSource.companyId" :key="index" class="flex flex-col items-center" >
+                          <div>
+                            <span>{{ filterDataSource(dataSource.companyId, item.value) }}</span>
+                          </div>
+                          <div v-if="detailFrom.evaluatePrices.some((it) => it.companyId === item.value)" class="flex flex-col items-center">
+                            <div>
+                              <span>{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).price).toFixed(2) }}$/{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).fee).toFixed(2) }}$【美金】</span>
+                            </div>
+                            <div>
+                              <span>{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).price * detailFrom.rate).toFixed(2) }}￥/{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).fee * detailFrom.rate).toFixed(2) }}￥【填写汇率】{{ detailFrom.rate }}</span>
+                            </div>
+                            <div>
+                              <span>{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).price * rate.rate).toFixed(2) }}￥/{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).fee * rate.rate).toFixed(2) }}￥【实时汇率】{{ rate.rate }}</span>
+                            </div>
+                            <div>
+                              <span>{{ getEvaluatePrice(detailFrom.evaluatePrices, item.value).remark }}</span>【备注】
+                            </div>
+                          </div>
+                          <div v-else>
+                            - -
+                          </div>
+                        </div>
+                      </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="美元汇率">
+                      {{detailFrom.rate}}
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
@@ -259,6 +329,7 @@ import ExportExcel from '@/components/exportExcel/exportExcel.vue'
 import ImportExcel from '@/components/exportExcel/importExcel.vue'
 // 导出模板组件
 import ExportTemplate from '@/components/exportExcel/exportTemplate.vue'
+  import { getRate } from '@/api/bagique/common'
 
 
 defineOptions({
@@ -277,6 +348,7 @@ const formData = ref({
             evaluatePics: [],
             status: '',
             remark: '',
+            rate:0,
         })
   const dataSource = ref([])
   const getDataSourceFunc = async()=>{
@@ -319,6 +391,19 @@ const rule = reactive({
                    message: '不能只输入空格',
                    trigger: ['input', 'blur'],
               }
+              ],
+              rate: [
+                {
+                  validator: (rule, value, callback) => {
+                    //价格必须大于等于0
+                    if (value < 0) {
+                      callback(new Error('美元汇率不能小于0'))
+                    } else {
+                      callback()
+                    }
+                  },
+                  trigger: ['input', 'blur']
+                }
               ],
               evaluatePrices: [
                 //companyId price fee
@@ -372,6 +457,10 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
+const rate = ref({
+  rate: 0,
+  time: ''
+})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
@@ -431,8 +520,17 @@ const getTableData = async() => {
     pageSize.value = table.data.pageSize
   }
 }
+  // 获取美元汇率
+  const getRateData = async () => {
+    const res = await getRate({})
+    if (res.code === 0) {
+      rate.value = res.data
+      formData.value.rate = res.data.rate
+    }
+  }
 
 getTableData()
+getRateData()
 
 // ============== 表格控制部分结束 ===============
 
@@ -569,6 +667,7 @@ const closeDialog = () => {
         evaluatePics: [],
         status: '',
         remark: '',
+        rate:0,
         }
 }
 // 弹窗确定
@@ -639,6 +738,11 @@ const addEvaluatePrice = () => {
     fee: 0,
     remark:''
   })
+}
+
+//缓存查询
+const getEvaluatePrice = (evaluatePrices, companyId) => {
+  return evaluatePrices.find((item) => item.companyId === companyId)
 }
 
 

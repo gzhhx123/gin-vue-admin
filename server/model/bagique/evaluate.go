@@ -13,6 +13,7 @@ type Evaluate struct {
 	SellerId       *int            `json:"sellerId" form:"sellerId" gorm:"column:seller_id;comment:卖家id;" binding:"required"`                                       //卖家
 	EvaluatePics   datatypes.JSON  `json:"evaluatePics" form:"evaluatePics" gorm:"column:evaluate_pics;comment:细节图;" binding:"required" swaggertype:"array,object"` //细节图
 	Status         *string         `json:"status" form:"status" gorm:"column:status;comment:估价状态;" binding:"required"`                                              //估价状态
+	Rate           *float64        `json:"rate" form:"rate" gorm:"column:rate;comment:汇率;default:0;"`                                                               //汇率
 	Remark         *string         `json:"remark" form:"remark" gorm:"column:remark;comment:备注;"`                                                                   //备注
 	EvaluatePrices []EvaluatePrice `json:"evaluatePrices" gorm:"foreignKey:EvaluateId;references:ID;"`                                                              //公司估价
 }

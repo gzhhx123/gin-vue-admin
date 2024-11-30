@@ -266,7 +266,7 @@
                           <div>
                             <span>{{ filterDataSource(dataSource.companyId, item.value) }}</span>
                           </div>
-                          <div v-if="detailFrom.evaluatePrices.some((it) => it.companyId === item.value)" class="flex flex-col items-center">
+                          <div v-if="detailFrom.evaluatePrices&&detailFrom.evaluatePrices.some((it) => it.companyId === item.value)" class="flex flex-col items-center">
                             <div>
                               <span>{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).price).toFixed(2) }}$/{{ (getEvaluatePrice(detailFrom.evaluatePrices, item.value).fee).toFixed(2) }}$【美金】</span>
                             </div>

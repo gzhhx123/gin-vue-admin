@@ -202,7 +202,7 @@
                         {{ detailFrom.productSku }}
                     </el-descriptions-item>
                     <el-descriptions-item label="参考价">
-                      <div v-if="detailFrom.referPriceMin!==0&&detailFrom.referPriceMax!==0">
+                      <div v-if="detailFrom.referPriceMin&&detailFrom.referPriceMax&&detailFrom.referPriceMin!==0&&detailFrom.referPriceMax!==0">
                         <div>
                           {{ (detailFrom.referPriceMin).toFixed(2) }}~{{ (detailFrom.referPriceMax).toFixed(2) }}$【美金】
                         </div>

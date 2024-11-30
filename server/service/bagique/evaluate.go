@@ -21,6 +21,13 @@ func (evaluateService *EvaluateService) CreateEvaluate(evaluate *bagique.Evaluat
 // DeleteEvaluate 删除估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) DeleteEvaluate(ID string, TYPE string) (err error) {
+	//如果status为FINISH 则无法删除
+	var evaluate bagique.Evaluate
+	err = global.MustGetGlobalDBByDBName("bagique").First(&evaluate, ID).Error
+	if *evaluate.Status == "FINISH" {
+		err = errors.New("已完成的估价单不允许删除")
+		return err
+	}
 	if TYPE == "HARD" {
 		err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Delete(&bagique.Evaluate{}, "id = ?", ID).Error
 	} else {
@@ -32,6 +39,15 @@ func (evaluateService *EvaluateService) DeleteEvaluate(ID string, TYPE string) (
 // DeleteEvaluateByIds 批量删除估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) DeleteEvaluateByIds(IDs []string) (err error) {
+	//如果status包含FINISH 则无法删除
+	var evaluates []bagique.Evaluate
+	err = global.MustGetGlobalDBByDBName("bagique").Find(&evaluates, "id in ?", IDs).Error
+	for _, v := range evaluates {
+		if *v.Status == "FINISH" {
+			err = errors.New("包含已完成的估价单不允许删除")
+			return err
+		}
+	}
 	err = global.MustGetGlobalDBByDBName("bagique").Delete(&[]bagique.Evaluate{}, "id in ?", IDs).Error
 	return err
 }
@@ -192,5 +208,35 @@ func (evaluateService *EvaluateService) GetEvaluatePublic() {
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) RestoreEvaluate(ID string) (err error) {
 	err = global.MustGetGlobalDBByDBName("bagique").Unscoped().Model(&bagique.Evaluate{}).Where("id = ?", ID).Update("deleted_at", nil).Error
+	return err
+}
+
+// FinishEvaluate 根据ID完成估价
+// Author [yourname](https://github.com/yourname)
+func (evaluateService *EvaluateService) FinishEvaluate(ID string) (err error) {
+	var evaluate bagique.Evaluate
+	err = global.MustGetGlobalDBByDBName("bagique").First(&evaluate, ID).Error
+	if err != nil {
+		return errors.New("不正确的估价单ID")
+	}
+	if *evaluate.Status == "FINISH" || *evaluate.Status == "CANCEL" {
+		return errors.New("非法的估价单状态")
+	}
+	err = global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{}).Where("id = ?", ID).Update("status", "FINISH").Error
+	return err
+}
+
+// CancelEvaluate 根据ID取消估价
+// Author [yourname](https://github.com/yourname)
+func (evaluateService *EvaluateService) CancelEvaluate(ID string) (err error) {
+	var evaluate bagique.Evaluate
+	err = global.MustGetGlobalDBByDBName("bagique").First(&evaluate, ID).Error
+	if err != nil {
+		return errors.New("不正确的估价单ID")
+	}
+	if *evaluate.Status == "FINISH" || *evaluate.Status == "CANCEL" {
+		return errors.New("非法的估价单状态")
+	}
+	err = global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{}).Where("id = ?", ID).Update("status", "CANCEL").Error
 	return err
 }

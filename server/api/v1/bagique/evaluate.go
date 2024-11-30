@@ -204,3 +204,41 @@ func (evaluateApi *EvaluateApi) RestoreEvaluate(c *gin.Context) {
 	}
 	response.OkWithMessage("恢复成功", c)
 }
+
+// FinishEvaluate 根据ID完成估价
+// @Tags Evaluate
+// @Summary 根据ID完成估价
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.EvaluateSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/finishEvaluate [PUT]
+func (evaluateApi *EvaluateApi) FinishEvaluate(c *gin.Context) {
+	ID := c.Query("ID")
+	err := evaluateService.FinishEvaluate(ID)
+	if err != nil {
+		global.GVA_LOG.Error("提交失败!", zap.Error(err))
+		response.FailWithMessage("提交失败", c)
+		return
+	}
+	response.OkWithData("提交成功", c)
+}
+
+// CancelEvaluate 根据ID取消估价
+// @Tags Evaluate
+// @Summary 根据ID取消估价
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.EvaluateSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/cancelEvaluate [PUT]
+func (evaluateApi *EvaluateApi) CancelEvaluate(c *gin.Context) {
+	ID := c.Query("ID")
+	err := evaluateService.CancelEvaluate(ID)
+	if err != nil {
+		global.GVA_LOG.Error("取消失败!", zap.Error(err))
+		response.FailWithMessage("取消失败", c)
+		return
+	}
+	response.OkWithData("取消成功", c)
+}

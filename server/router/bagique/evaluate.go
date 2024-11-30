@@ -17,6 +17,8 @@ func (s *EvaluateRouter) InitEvaluateRouter(Router *gin.RouterGroup, PublicRoute
 		evaluateRouter.DELETE("deleteEvaluateByIds", evaluateApi.DeleteEvaluateByIds)
 		evaluateRouter.PUT("updateEvaluate", evaluateApi.UpdateEvaluate)
 		evaluateRouter.PUT("restoreEvaluate", evaluateApi.RestoreEvaluate)
+		evaluateRouter.PUT("finishEvaluate", evaluateApi.FinishEvaluate)
+		evaluateRouter.PUT("cancelEvaluate", evaluateApi.CancelEvaluate)
 	}
 	{
 		evaluateRouterWithoutRecord.GET("findEvaluate", evaluateApi.FindEvaluate)

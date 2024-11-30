@@ -135,3 +135,31 @@ export const restoreEvaluate = (params) => {
     params
   })
 }
+// FinishEvaluate 根据ID完成估价
+// @Tags Evaluate
+// @Summary 根据ID完成估价
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/finishEvaluate [PUT]
+export const finishEvaluate = (params) => {
+  return service({
+    url: '/evaluate/finishEvaluate',
+    method: 'PUT',
+    params
+  })
+}
+// CancelEvaluate 根据ID取消估价
+// @Tags Evaluate
+// @Summary 根据ID取消估价
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /evaluate/cancelEvaluate [PUT]
+export const cancelEvaluate = (params) => {
+  return service({
+    url: '/evaluate/cancelEvaluate',
+    method: 'PUT',
+    params
+  })
+}

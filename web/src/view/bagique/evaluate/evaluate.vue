@@ -128,11 +128,11 @@
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="center" label="操作" fixed="right" min-width="240">
             <template #default="scope">
-              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">完成估价</el-button>
-              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">取消估价</el-button>
-              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">查看</el-button>
+              <el-button  type="primary" v-if="scope.row.status==='WAITING'||scope.row.status==='REFUSE'" link icon="circle-check" class="table-button" @click="finishRow(scope.row)">完成估价</el-button>
+              <el-button  type="primary" v-if="scope.row.status==='WAITING'||scope.row.status==='REFUSE'" link icon="circle-close" class="table-button" @click="cancelRow(scope.row)">取消估价</el-button>
+              <el-button  type="primary" link icon="info-filled" class="table-button" @click="getDetails(scope.row)">查看</el-button>
               <el-button  type="primary" v-if="scope.row.status==='WAITING'||scope.row.status==='REFUSE'" link icon="edit" class="table-button" @click="updateEvaluateFunc(scope.row)">编辑</el-button>
-              <el-button  type="primary" link icon="delete" class="table-button" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+              <el-button  type="primary" v-if="scope.row.status!=='FINISH'" link icon="delete" class="table-button" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
               <el-button  type="primary" link icon="edit" class="table-button" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
@@ -309,7 +309,9 @@
     deleteEvaluateByIds,
     updateEvaluate,
     findEvaluate,
-    getEvaluateList, restoreEvaluate
+    getEvaluateList,
+    restoreEvaluate,
+    finishEvaluate, cancelEvaluate
   } from '@/api/bagique/evaluate'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
@@ -558,6 +560,29 @@ const restoreRow = (row) => {
   })
 }
 
+// 完成估价
+const finishRow = (row) => {
+  ElMessageBox.confirm('确定要完成估价吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    finishEvaluateFunc(row)
+  })
+}
+
+// 取消估价
+const cancelRow = (row) => {
+  ElMessageBox.confirm('确定要取消估价吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    cancelEvaluateFunc(row)
+  })
+}
+
+
 // 多选删除
 const onDelete = async() => {
   ElMessageBox.confirm('确定要删除吗?', '提示', {
@@ -631,6 +656,30 @@ const restoreEvaluateFunc = async (row) => {
     })
     getTableData()
   }
+}
+
+// 完成行
+const finishEvaluateFunc = async (row)=>{
+    const res = await finishEvaluate({ ID: row.ID })
+    if (res.code === 0) {
+      ElMessage({
+        type: 'success',
+        message: '完成估价成功'
+      })
+      getTableData()
+    }
+}
+
+// 取消行
+const cancelEvaluateFunc = async (row)=>{
+    const res = await cancelEvaluate({ ID: row.ID })
+    if (res.code === 0) {
+      ElMessage({
+        type: 'success',
+        message: '取消估价成功'
+      })
+      getTableData()
+    }
 }
 
 // 弹窗控制标记

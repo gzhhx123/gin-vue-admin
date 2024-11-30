@@ -47,7 +47,8 @@ func (trackCompanyApi *TrackCompanyApi) CreateTrackCompany(c *gin.Context) {
 // @Router /trackCompany/deleteTrackCompany [delete]
 func (trackCompanyApi *TrackCompanyApi) DeleteTrackCompany(c *gin.Context) {
 	ID := c.Query("ID")
-	err := trackCompanyService.DeleteTrackCompany(ID)
+	TYPE := c.Query("TYPE")
+	err := trackCompanyService.DeleteTrackCompany(ID, TYPE)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败:"+err.Error(), c)
@@ -165,4 +166,23 @@ func (trackCompanyApi *TrackCompanyApi) GetTrackCompanyPublic(c *gin.Context) {
 	response.OkWithDetailed(gin.H{
 		"info": "不需要鉴权的物流公司接口信息",
 	}, "获取成功", c)
+}
+
+// RestoreTrackCompany 根据ID恢复物流公司
+// @Tags TrackCompany
+// @Summary 根据ID恢复物流公司
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.TrackCompanySearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /trackCompany/restoreTrackCompany [PUT]
+func (trackCompanyApi *TrackCompanyApi) RestoreTrackCompany(c *gin.Context) {
+	ID := c.Query("ID")
+	err := trackCompanyService.RestoreTrackCompany(ID)
+	if err != nil {
+		global.GVA_LOG.Error("恢复失败!", zap.Error(err))
+		response.FailWithMessage("恢复失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("恢复成功", c)
 }

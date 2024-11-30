@@ -108,3 +108,17 @@ export const getTrackCompanyPublic = () => {
     method: 'get',
   })
 }
+// RestoreTrackCompany 根据ID恢复物流公司
+// @Tags TrackCompany
+// @Summary 根据ID恢复物流公司
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /trackCompany/restoreTrackCompany [PUT]
+export const restoreTrackCompany = (params) => {
+  return service({
+    url: '/trackCompany/restoreTrackCompany',
+    method: 'PUT',
+    params
+  })
+}

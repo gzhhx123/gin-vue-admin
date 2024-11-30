@@ -11,6 +11,7 @@ type TrackCompanySearch struct {
 	CompanyName      *string    `json:"companyName" form:"companyName" `
 	CompanyShortName *string    `json:"companyShortName" form:"companyShortName" `
 	CompanyUrl       *string    `json:"companyUrl" form:"companyUrl" `
+	IsRemove         *bool      `json:"isRemove" form:"isRemove" `
 	Remark           *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

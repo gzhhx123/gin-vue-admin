@@ -59,7 +59,7 @@ func (purchaseService *PurchaseService) GetPurchaseInfoList(info bagiqueReq.Purc
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
-	db := global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Purchase{})
+	db := global.MustGetGlobalDBByDBName("bagique").Preload("Evaluate").Preload("EvaluatePrice").Model(&bagique.Purchase{})
 	var purchases []bagique.Purchase
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {

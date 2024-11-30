@@ -52,17 +52,40 @@
         >
         <el-table-column type="selection" width="55" />
         
-        <el-table-column align="left" label="日期" prop="createdAt" width="180">
+        <el-table-column align="left" label="创建日期" prop="CreatedAt" width="180" fixed="left">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
-        
-          <el-table-column sortable align="left" label="估价公司估价" prop="evaluatePriceId" width="120" />
-        <el-table-column sortable align="left" label="采购状态" prop="status" width="120">
-            <template #default="scope">
-            {{ filterDict(scope.row.status,purchase_statusOptions) }}
-            </template>
+        <el-table-column sortable align="left" label="产品" prop="productId" width="120" fixed="left">
+          <template #default="scope">
+          </template>
         </el-table-column>
-          <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
+        <el-table-column label="细节图" prop="evaluatePics" width="200">
+          <template #default="scope">
+            <div class="multiple-img-box">
+              <el-image preview-teleported v-for="(item,index) in scope.row.evaluatePics" :key="index" style="width: 80px; height: 80px" :src="getUrl(item)" fit="cover"/>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable align="left" label="采购状态" prop="status" width="120">
+          <template #default="scope">
+            {{ filterDict(scope.row.status,purchase_statusOptions) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="公司估价" prop="evaluatePrice" align="center">
+          <el-table-column label="公司" align="center">
+
+          </el-table-column>
+          <el-table-column label="估价" align="center">
+
+          </el-table-column>
+          <el-table-column label="估价费用" align="center">
+
+          </el-table-column>
+          <el-table-column label="备注" align="center">
+
+          </el-table-column>
+        </el-table-column>
+        <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
@@ -147,6 +170,7 @@ import ExportExcel from '@/components/exportExcel/exportExcel.vue'
 import ImportExcel from '@/components/exportExcel/importExcel.vue'
 // 导出模板组件
 import ExportTemplate from '@/components/exportExcel/exportTemplate.vue'
+import { getUrl } from '@/utils/image'
 
 
 defineOptions({

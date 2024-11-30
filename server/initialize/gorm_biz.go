@@ -12,6 +12,6 @@ func bizModel() error {
 		return err
 	}
 	bagiqueDb := global.GetGlobalDBByDBName("bagique")
-	bagiqueDb.AutoMigrate(bagique.Brand{}, bagique.Product{}, bagique.Company{}, bagique.Seller{}, bagique.Evaluate{}, bagique.EvaluatePrice{})
+	bagiqueDb.AutoMigrate(bagique.Brand{}, bagique.Product{}, bagique.Company{}, bagique.Seller{}, bagique.Evaluate{}, bagique.EvaluatePrice{}, bagique.Purchase{}, bagique.TrackCompany{})
 	return nil
 }

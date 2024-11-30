@@ -1,6 +1,7 @@
 package bagique
 
 import (
+	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/bagique"
 	bagiqueReq "github.com/flipped-aurora/gin-vue-admin/server/model/bagique/request"
@@ -11,6 +12,8 @@ type EvaluateService struct{}
 // CreateEvaluate 创建估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) CreateEvaluate(evaluate *bagique.Evaluate) (err error) {
+	evaluate.Status = new(string)
+	*evaluate.Status = "WAITING"
 	err = global.MustGetGlobalDBByDBName("bagique").Create(evaluate).Error
 	return err
 }
@@ -36,6 +39,18 @@ func (evaluateService *EvaluateService) DeleteEvaluateByIds(IDs []string) (err e
 // UpdateEvaluate 更新估价信息记录
 // Author [yourname](https://github.com/yourname)
 func (evaluateService *EvaluateService) UpdateEvaluate(evaluate bagique.Evaluate) (err error) {
+	if *evaluate.Status == "FINISH" || *evaluate.Status == "CANCEL" {
+		err = errors.New("非法的估价单状态")
+		return err
+	}
+	var eva bagique.Evaluate
+	err = global.MustGetGlobalDBByDBName("bagique").First(&eva, evaluate.ID).Error
+	if *eva.Status == "FINISH" || *eva.Status == "CANCEL" {
+		err = errors.New("已完成或已取消的估价单不允许修改")
+		return err
+	}
+	evaluate.Status = new(string)
+	*evaluate.Status = "WAITING"
 	tx := global.MustGetGlobalDBByDBName("bagique").Begin()
 	//更新估价主记录
 	err = tx.Model(&bagique.Evaluate{}).Where("id = ?", evaluate.ID).Updates(&evaluate).Error

@@ -18,7 +18,7 @@
       </el-form-item>
       
             <el-form-item label="品牌" prop="brandId">
-               <el-select  v-model="searchInfo.brandId" placeholder="请选择品牌" :clearable="true" >
+               <el-select filterable  v-model="searchInfo.brandId" placeholder="请选择品牌" :clearable="true" >
                    <el-option v-for="(item,key) in dataSource.brandId" :key="key" :label="item.label" :value="item.value" />
                </el-select>
             </el-form-item>
@@ -136,7 +136,7 @@
 
           <el-form :model="formData" label-position="top" ref="elFormRef" :rules="rule" label-width="80px">
             <el-form-item label="品牌:"  prop="brandId" >
-            <el-select  v-model="formData.brandId" placeholder="请选择品牌" style="width:100%" :clearable="true" >
+            <el-select filterable  v-model="formData.brandId" placeholder="请选择品牌" style="width:100%" :clearable="true" >
               <el-option v-for="(item,key) in dataSource.brandId" :key="key" :label="item.label" :value="item.value" />
             </el-select>
             </el-form-item>

@@ -117,7 +117,7 @@
               <el-icon style="margin-right: 5px">
                 <InfoFilled />
               </el-icon>
-              驳回采购
+              驳回估价
             </el-button>
           </template>
         </el-table-column>

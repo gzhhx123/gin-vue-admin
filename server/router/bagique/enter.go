@@ -9,13 +9,17 @@ type RouterGroup struct {
 	SellerRouter
 	EvaluateRouter
 	CommonRouter
+	PurchaseRouter
+	TrackCompanyRouter
 }
 
 var (
-	brandApi    = api.ApiGroupApp.BagiqueApiGroup.BrandApi
-	productApi  = api.ApiGroupApp.BagiqueApiGroup.ProductApi
-	companyApi  = api.ApiGroupApp.BagiqueApiGroup.CompanyApi
-	sellerApi   = api.ApiGroupApp.BagiqueApiGroup.SellerApi
-	evaluateApi = api.ApiGroupApp.BagiqueApiGroup.EvaluateApi
-	commonApi   = api.ApiGroupApp.BagiqueApiGroup.CommonApi
+	brandApi        = api.ApiGroupApp.BagiqueApiGroup.BrandApi
+	productApi      = api.ApiGroupApp.BagiqueApiGroup.ProductApi
+	companyApi      = api.ApiGroupApp.BagiqueApiGroup.CompanyApi
+	sellerApi       = api.ApiGroupApp.BagiqueApiGroup.SellerApi
+	evaluateApi     = api.ApiGroupApp.BagiqueApiGroup.EvaluateApi
+	commonApi       = api.ApiGroupApp.BagiqueApiGroup.CommonApi
+	purchaseApi     = api.ApiGroupApp.BagiqueApiGroup.PurchaseApi
+	trackCompanyApi = api.ApiGroupApp.BagiqueApiGroup.TrackCompanyApi
 )

@@ -18,12 +18,12 @@
       </el-form-item>
       
             <el-form-item label="产品" prop="productId">
-               <el-select  v-model="searchInfo.productId" placeholder="请选择产品" :clearable="true" >
+               <el-select filterable  v-model="searchInfo.productId" placeholder="请选择产品" :clearable="true" >
                    <el-option v-for="(item,key) in dataSource.productId" :key="key" :label="item.label" :value="item.value" />
                </el-select>
             </el-form-item>
             <el-form-item label="卖家" prop="sellerId">
-               <el-select  v-model="searchInfo.sellerId" placeholder="请选择卖家" :clearable="true" >
+               <el-select filterable  v-model="searchInfo.sellerId" placeholder="请选择卖家" :clearable="true" >
                    <el-option v-for="(item,key) in dataSource.sellerId" :key="key" :label="item.label" :value="item.value" />
                </el-select>
             </el-form-item>
@@ -126,12 +126,14 @@
           </el-table-column>
         </el-table-column>
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
-        <el-table-column align="left" label="操作" fixed="right" min-width="240">
+        <el-table-column align="center" label="操作" fixed="right" min-width="240">
             <template #default="scope">
-            <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
-            <el-button  type="primary" link icon="edit" class="table-button" @click="updateEvaluateFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
-            <el-button  type="primary" link icon="edit" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
+              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">完成估价</el-button>
+              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">取消估价</el-button>
+              <el-button  type="primary" link icon="delete" class="table-button" @click="getDetails(scope.row)">查看</el-button>
+              <el-button  type="primary" v-if="scope.row.status==='WAITING'||scope.row.status==='REFUSE'" link icon="edit" class="table-button" @click="updateEvaluateFunc(scope.row)">编辑</el-button>
+              <el-button  type="primary" link icon="delete" class="table-button" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
+              <el-button  type="primary" link icon="edit" class="table-button" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -160,12 +162,12 @@
 
           <el-form :model="formData" label-position="top" ref="elFormRef" :rules="rule" label-width="80px">
             <el-form-item label="产品:"  prop="productId" >
-            <el-select  v-model="formData.productId" placeholder="请选择产品" style="width:100%" :clearable="true" >
+            <el-select  filterable v-model="formData.productId" placeholder="请选择产品" style="width:100%" :clearable="true" >
               <el-option v-for="(item,key) in dataSource.productId" :key="key" :label="item.label" :value="item.value" />
             </el-select>
             </el-form-item>
-            <el-form-item label="卖家:"  prop="sellerId" >
-            <el-select  v-model="formData.sellerId" placeholder="请选择卖家" style="width:100%" :clearable="true" >
+            <el-form-item  label="卖家:"  prop="sellerId" >
+            <el-select  filterable v-model="formData.sellerId" placeholder="请选择卖家" style="width:100%" :clearable="true" >
               <el-option v-for="(item,key) in dataSource.sellerId" :key="key" :label="item.label" :value="item.value" />
             </el-select>
             </el-form-item>
@@ -175,11 +177,6 @@
                  v-model="formData.evaluatePics"
                  file-type="image"
                  />
-            </el-form-item>
-            <el-form-item label="估价状态:"  prop="status" >
-              <el-select v-model="formData.status" placeholder="请选择估价状态" style="width:100%" :clearable="true" >
-                <el-option v-for="(item,key) in evaluate_statusOptions" :key="key" :label="item.label" :value="item.value" />
-              </el-select>
             </el-form-item>
             <div>实时汇率:{{rate.rate}} 更新时间:{{formatDate(rate.time)}}</div>
             <el-form-item label="美元汇率:"  prop="rate" class="mt-2">
@@ -346,7 +343,6 @@ const formData = ref({
             sellerId: undefined,
             evaluatePrices: [],
             evaluatePics: [],
-            status: '',
             remark: '',
             rate:0,
         })
@@ -380,17 +376,6 @@ const rule = reactive({
                    message: '请正确上传细节图',
                    trigger: ['input','blur'],
                },
-              ],
-               status : [{
-                   required: true,
-                   message: '请正确选择估价状态',
-                   trigger: ['input','blur'],
-               },
-               {
-                   whitespace: true,
-                   message: '不能只输入空格',
-                   trigger: ['input', 'blur'],
-              }
               ],
               rate: [
                 {
@@ -665,7 +650,6 @@ const closeDialog = () => {
         sellerId: undefined,
         evaluatePrices: [],
         evaluatePics: [],
-        status: '',
         remark: '',
         rate:0,
         }

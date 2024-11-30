@@ -133,7 +133,7 @@
               <el-button  type="primary" link icon="info-filled" class="table-button" @click="getDetails(scope.row)">查看</el-button>
               <el-button  type="primary" v-if="scope.row.status==='WAITING'||scope.row.status==='REFUSE'" link icon="edit" class="table-button" @click="updateEvaluateFunc(scope.row)">编辑</el-button>
               <el-button  type="primary" v-if="scope.row.status!=='FINISH'" link icon="delete" class="table-button" @click="deleteRow(scope.row)">{{scope.row.DeletedAt?'彻底删除':'删除'}}</el-button>
-              <el-button  type="primary" link icon="edit" class="table-button" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
+              <el-button  type="primary" link icon="refresh-left" class="table-button" @click="restoreRow(scope.row)" v-if="scope.row.DeletedAt">恢复</el-button>
             </template>
         </el-table-column>
         </el-table>

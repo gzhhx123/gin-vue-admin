@@ -1,6 +1,7 @@
 package bagique
 
 import (
+	"errors"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/bagique"
 	bagiqueReq "github.com/flipped-aurora/gin-vue-admin/server/model/bagique/request"
@@ -11,6 +12,15 @@ type PurchaseService struct{}
 // CreatePurchase 创建采购信息记录
 // Author [yourname](https://github.com/yourname)
 func (purchaseService *PurchaseService) CreatePurchase(purchase *bagique.Purchase) (err error) {
+	//先判断purchase表是否已经有EvaluateId
+	var count int64
+	global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Purchase{}).Where("evaluate_id = ?", *purchase.EvaluateId).Count(&count)
+	if count > 0 {
+		err = errors.New("已经存在该估价公司的采购信息")
+		return err
+	}
+	purchase.Status = new(string)
+	*purchase.Status = "ADD"
 	err = global.MustGetGlobalDBByDBName("bagique").Create(purchase).Error
 	return err
 }
@@ -85,4 +95,11 @@ func (purchaseService *PurchaseService) GetPurchaseInfoList(info bagiqueReq.Purc
 func (purchaseService *PurchaseService) GetPurchasePublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现
+}
+
+// RefuseEvaluate 根据ID驳回估价
+// Author [yourname](https://github.com/yourname)
+func (purchaseService *PurchaseService) RefuseEvaluate(ID string) (err error) {
+	err = global.MustGetGlobalDBByDBName("bagique").Model(&bagique.Evaluate{}).Where("id = ?", ID).Update("status", "REFUSE").Error
+	return err
 }

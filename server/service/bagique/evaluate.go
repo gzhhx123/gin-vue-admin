@@ -65,8 +65,8 @@ func (evaluateService *EvaluateService) UpdateEvaluate(evaluate bagique.Evaluate
 		err = errors.New("已完成或已取消的估价单不允许修改")
 		return err
 	}
-	evaluate.Status = new(string)
-	*evaluate.Status = "WAITING"
+	//evaluate.Status = new(string)
+	//*evaluate.Status = "WAITING"
 	tx := global.MustGetGlobalDBByDBName("bagique").Begin()
 	//更新估价主记录
 	err = tx.Model(&bagique.Evaluate{}).Where("id = ?", evaluate.ID).Updates(&evaluate).Error
@@ -134,7 +134,11 @@ func (evaluateService *EvaluateService) GetEvaluateInfoList(info bagiqueReq.Eval
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
-	db := global.MustGetGlobalDBByDBName("bagique").Preload("EvaluatePrices").Model(&bagique.Evaluate{})
+	db := global.MustGetGlobalDBByDBName("bagique").Preload("EvaluatePrices")
+	if info.IsPurchase != nil && *info.IsPurchase == true {
+		db.Preload("Purchase")
+	}
+	db = db.Model(&bagique.Evaluate{})
 	var evaluates []bagique.Evaluate
 	// 如果有条件搜索 下方会自动创建搜索语句
 	if info.IsRemove != nil && *info.IsRemove == true {
@@ -149,8 +153,12 @@ func (evaluateService *EvaluateService) GetEvaluateInfoList(info bagiqueReq.Eval
 	if info.SellerId != nil {
 		db = db.Where("seller_id = ?", *info.SellerId)
 	}
-	if info.Status != nil && *info.Status != "" {
-		db = db.Where("status = ?", *info.Status)
+	if info.IsPurchase != nil && *info.IsPurchase == true {
+		db = db.Where("status = ?", "FINISH")
+	} else {
+		if info.Status != nil && *info.Status != "" {
+			db = db.Where("status = ?", *info.Status)
+		}
 	}
 	if info.Remark != nil && *info.Remark != "" {
 		db = db.Where("remark LIKE ?", "%"+*info.Remark+"%")

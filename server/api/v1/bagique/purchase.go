@@ -166,3 +166,22 @@ func (purchaseApi *PurchaseApi) GetPurchasePublic(c *gin.Context) {
 		"info": "不需要鉴权的采购信息接口信息",
 	}, "获取成功", c)
 }
+
+// RefuseEvaluate 根据ID驳回估价
+// @Tags Purchase
+// @Summary 根据ID驳回估价
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/refuseEvaluate [PUT]
+func (purchaseApi *PurchaseApi) RefuseEvaluate(c *gin.Context) {
+	ID := c.Query("ID")
+	err := purchaseService.RefuseEvaluate(ID)
+	if err != nil {
+		global.GVA_LOG.Error("驳回失败!", zap.Error(err))
+		response.FailWithMessage("驳回失败", c)
+		return
+	}
+	response.OkWithData("驳回成功", c)
+}

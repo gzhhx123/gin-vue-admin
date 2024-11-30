@@ -16,6 +16,7 @@ type Evaluate struct {
 	Rate           *float64        `json:"rate" form:"rate" gorm:"column:rate;comment:汇率;default:0;"`                                                               //汇率
 	Remark         *string         `json:"remark" form:"remark" gorm:"column:remark;comment:备注;"`                                                                   //备注
 	EvaluatePrices []EvaluatePrice `json:"evaluatePrices" gorm:"foreignKey:EvaluateId;references:ID;"`                                                              //公司估价
+	Purchase       *Purchase       `json:"purchase" gorm:"foreignKey:EvaluateId;references:ID;"`                                                                    //采购
 }
 
 // TableName 估价信息 Evaluate自定义表名 bagique_evaluates

@@ -67,6 +67,12 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column sortable align="left" label="采购状态" prop="status" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.purchase">已采购</span>
+            <span v-else>未采购</span>
+          </template>
+        </el-table-column>
         <el-table-column label="公司估价" prop="evaluatePrices" align="center">
           <el-table-column label="【格式】估价/估价费用" align="center">
             <el-table-column v-for="(item,index) in dataSource.companyId" :key="index" :label="item.label"
@@ -101,22 +107,13 @@
         <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
           <template #default="scope">
-            <el-button type="primary" link class="table-button" @click="getDetails(scope.row)">
-              <el-icon style="margin-right: 5px">
-                <InfoFilled />
-              </el-icon>
+            <el-button type="primary" link icon="info-filled" class="table-button" @click="getDetails(scope.row)">
               查看
             </el-button>
-            <el-button type="primary" link class="table-button" @click="updateEvaluateFunc(scope.row)">
-              <el-icon style="margin-right: 5px">
-                <InfoFilled />
-              </el-icon>
+            <el-button v-if="!scope.row.purchase" type="primary" link icon="document-add" class="table-button" @click="AddPurchaseRow(scope.row)">
               添加采购
             </el-button>
-            <el-button type="primary" link class="table-button" @click="refuseRow(scope.row)">
-              <el-icon style="margin-right: 5px">
-                <InfoFilled />
-              </el-icon>
+            <el-button v-if="!scope.row.purchase" type="primary" link icon="document-remove" class="table-button" @click="refuseRow(scope.row)">
               驳回估价
             </el-button>
           </template>
@@ -145,7 +142,7 @@
         </div>
       </template>
 
-      <el-form :model="formData" label-position="top" ref="elFormRef" :rules="rule" label-width="80px">
+      <el-form :model="formData" label-position="top"  label-width="80px">
         <el-form-item label="估价信息:" prop="evaluatePrices">
           <el-table ref="singleTableRef" :data="formData.evaluatePrices" highlight-current-row @current-change="handleCurrent">
             <el-table-column label="估价公司" align="center">
@@ -250,11 +247,10 @@
 <script setup>
   import {
     getEvaluateDataSource,
-    createEvaluate,
-    updateEvaluate,
     findEvaluate,
-    getEvaluateList, restoreEvaluate
+    getEvaluateList
   } from '@/api/bagique/evaluate'
+  import { createPurchase, refuseEvaluate } from '@/api/bagique/purchase'
   import { getUrl } from '@/utils/image'
   // 图片选择组件
 
@@ -287,13 +283,8 @@
   // 自动化生成的字典（可能为空）以及字段
   const evaluate_statusOptions = ref([])
   const formData = ref({
-    productId: undefined,
-    sellerId: undefined,
-    evaluatePrices: [],
-    evaluatePics: [],
-    status: '',
+    evaluate_price_id:undefined,
     remark: '',
-    rate: 0
   })
   const dataSource = ref([])
   const getDataSourceFunc = async () => {
@@ -316,79 +307,6 @@
   }
 
 
-  // 验证规则
-  const rule = reactive({
-    productId: [{
-      required: true,
-      message: '请正确选择产品',
-      trigger: ['input', 'blur']
-    }
-    ],
-    sellerId: [{
-      required: true,
-      message: '请正确选择卖家',
-      trigger: ['input', 'blur']
-    }
-    ],
-    evaluatePics: [{
-      required: true,
-      message: '请正确上传细节图',
-      trigger: ['input', 'blur']
-    }
-    ],
-    status: [{
-      required: true,
-      message: '请正确选择估价状态',
-      trigger: ['input', 'blur']
-    },
-      {
-        whitespace: true,
-        message: '不能只输入空格',
-        trigger: ['input', 'blur']
-      }
-    ],
-    rate: [
-      {
-        validator: (rule, value, callback) => {
-          //价格必须大于等于0
-          if (value < 0) {
-            callback(new Error('美元汇率不能小于0'))
-          } else {
-            callback()
-          }
-        },
-        trigger: ['input', 'blur']
-      }
-    ],
-    evaluatePrices: [
-      //companyId price fee
-      //companyId不能为空 price和fee要大于等于0
-      {
-        validator: (rule, value, callback) => {
-          if (value.length === 0) {
-            callback(new Error('请至少添加一条估价信息'))
-          } else {
-            for (let i = 0; i < value.length; i++) {
-              if (!value[i].companyId) {
-                callback(new Error('请正确选择估价公司'))
-                return
-              }
-              if (value[i].price < 0) {
-                callback(new Error('估价不能小于0'))
-                return
-              }
-              if (value[i].fee < 0) {
-                callback(new Error('估价费用不能小于0'))
-                return
-              }
-            }
-            callback()
-          }
-        }, required: true, trigger: ['input', 'blur']
-      }
-    ]
-  })
-
   const searchRule = reactive({
     createdAt: [
       {
@@ -407,7 +325,6 @@
     ]
   })
 
-  const elFormRef = ref()
   const elSearchFormRef = ref()
 
   // =========== 表格控制部分 ===========
@@ -416,7 +333,7 @@
   const pageSize = ref(10)
   const tableData = ref([])
   const searchInfo = ref({
-    status: 'FINISH'
+    isPurchase: true
   })
   const rate = ref({
     rate: 0,
@@ -445,7 +362,7 @@
 
   // 重置
   const onReset = () => {
-    searchInfo.value = { status: 'FINISH' }
+    searchInfo.value = { isPurchase: true }
     getTableData()
   }
 
@@ -503,11 +420,9 @@
   // 获取需要的字典 可能为空 按需保留
   setOptions()
 
-  // 行为控制标记（弹窗内部需要增还是改）
-  const type = ref('')
 
   // 更新行
-  const updateEvaluateFunc = async (row) => {
+  const AddPurchaseRow = async (row) => {
     const res = await findEvaluate({ ID: row.ID })
     if (res.code === 0) {
       formData.value = res.data
@@ -524,40 +439,28 @@
   const closeDialog = () => {
     dialogFormVisible.value = false
     formData.value = {
-      productId: undefined,
-      sellerId: undefined,
-      evaluatePrices: [],
-      evaluatePics: [],
-      status: '',
+      evaluate_price_id:undefined,
       remark: '',
-      rate: 0
     }
   }
   // 弹窗确定
   const enterDialog = async () => {
-    elFormRef.value?.validate(async (valid) => {
-      if (!valid) return
-      let res
-      switch (type.value) {
-        case 'create':
-          res = await createEvaluate(formData.value)
-          break
-        case 'update':
-          res = await updateEvaluate(formData.value)
-          break
-        default:
-          res = await createEvaluate(formData.value)
-          break
-      }
-      if (res.code === 0) {
-        ElMessage({
-          type: 'success',
-          message: '创建/更改成功'
-        })
-        closeDialog()
-        getTableData()
-      }
-    })
+    if (!currentRow.value) {
+      ElMessage({
+        type: 'error',
+        message: '请选择估价信息'
+      })
+      return
+    }
+    const res = await createPurchase({evaluatePriceId:currentRow.value.ID,evaluateId:formData.value.ID,remark:formData.value.remark})
+    if (res.code === 0) {
+      ElMessage({
+        type: 'success',
+        message: '添加采购成功'
+      })
+      closeDialog()
+      getTableData()
+    }
   }
 
 
@@ -588,19 +491,6 @@
   const closeDetailShow = () => {
     detailShow.value = false
     detailFrom.value = {}
-  }
-
-  // 新增估价信息
-  const addEvaluatePrice = () => {
-    if (!formData.value.evaluatePrices) {
-      formData.value.evaluatePrices = []
-    }
-    formData.value.evaluatePrices.push({
-      companyId: undefined,
-      price: 0,
-      fee: 0,
-      remark: ''
-    })
   }
 
   //缓存查询

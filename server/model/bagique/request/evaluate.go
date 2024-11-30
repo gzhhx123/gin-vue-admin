@@ -12,6 +12,7 @@ type EvaluateSearch struct {
 	SellerId       *int       `json:"sellerId" form:"sellerId" `
 	Status         *string    `json:"status" form:"status" `
 	IsRemove       *bool      `json:"isRemove" form:"isRemove" `
+	IsPurchase     *bool      `json:"isPurchase" form:"isPurchase" `
 	Remark         *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

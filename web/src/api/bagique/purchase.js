@@ -108,3 +108,17 @@ export const getPurchasePublic = () => {
     method: 'get',
   })
 }
+// RefuseEvaluate 根据ID驳回估价
+// @Tags Purchase
+// @Summary 根据ID驳回估价
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/refuseEvaluate [PUT]
+export const refuseEvaluate = (params) => {
+  return service({
+    url: '/purchase/refuseEvaluate',
+    method: 'PUT',
+    params
+  })
+}

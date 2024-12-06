@@ -60,21 +60,21 @@
                 <el-tooltip
                   class="item"
                   effect="light"
-                  content="北京反转极光科技有限公司-技术部-前端事业群"
+                  content="开发人员"
                   placement="top"
                 >
                   <li class="info-list">
                     <el-icon>
                       <data-analysis />
                     </el-icon>
-                    北京反转极光科技有限公司-技术部-前端事业群
+                    开发人员
                   </li>
                 </el-tooltip>
                 <li class="info-list">
                   <el-icon>
                     <video-camera />
                   </el-icon>
-                  中国·北京市·朝阳区
+                  中国
                 </li>
                 <el-tooltip
                   class="item"

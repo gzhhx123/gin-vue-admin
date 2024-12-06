@@ -39,7 +39,7 @@
       <gva-table />
     </gva-card>
     <gva-card
-      title="最新插件"
+      title="最新事件"
       custom-class="col-span-1 md:col-span-3 row-span-2"
     >
       <gva-plugin-table />

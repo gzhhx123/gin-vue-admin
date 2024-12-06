@@ -21,23 +21,23 @@
         </div>
       </div>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 3xl:grid-cols-4 mt-8">
-      <div
-        v-for="(item, index) in recentVisits"
-        :key="index"
-        class="flex flex-col items-center mb-3 group cursor-pointer"
-        @click="openLink(item)"
-      >
-        <div
-          class="w-8 h-8 rounded bg-gray-200 dark:bg-slate-500 flex items-center justify-center group-hover:bg-blue-400 group-hover:text-white"
-        >
-          <el-icon><component :is="item.icon" /></el-icon>
-        </div>
-        <div class="text-xs mt-2 text-gray-700 dark:text-gray-300">
-          {{ item.title }}
-        </div>
-      </div>
-    </div>
+<!--    <div class="grid grid-cols-2 md:grid-cols-3 3xl:grid-cols-4 mt-8">-->
+<!--      <div-->
+<!--        v-for="(item, index) in recentVisits"-->
+<!--        :key="index"-->
+<!--        class="flex flex-col items-center mb-3 group cursor-pointer"-->
+<!--        @click="openLink(item)"-->
+<!--      >-->
+<!--        <div-->
+<!--          class="w-8 h-8 rounded bg-gray-200 dark:bg-slate-500 flex items-center justify-center group-hover:bg-blue-400 group-hover:text-white"-->
+<!--        >-->
+<!--          <el-icon><component :is="item.icon" /></el-icon>-->
+<!--        </div>-->
+<!--        <div class="text-xs mt-2 text-gray-700 dark:text-gray-300">-->
+<!--          {{ item.title }}-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </template>
 <script setup>

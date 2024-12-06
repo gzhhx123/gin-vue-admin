@@ -26,17 +26,13 @@
 
   const banners = [
     {
-      img: banner,
-      link: 'https://gin-vue-admin.com/empower/index.html'
+      img: "https://img2.baidu.com/it/u=257681495,312745373&fm=253&fmt=auto&app=120&f=JPEG?w=750&h=500",
+      link: 'https://baidu.com'
     },
     {
-      img: banner2,
-      link: 'https://plugin.gin-vue-admin.com'
+      img: "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimage109.360doc.com%2FDownloadImg%2F2021%2F12%2F2921%2F236804917_4_20211229090912536&refer=http%3A%2F%2Fimage109.360doc.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1736071415&t=a90538677d458e713cc6c3f3fb431d5b",
+      link: 'https://baidu.com'
     },
-    {
-      img: 'https://qmplusimg.henrongyi.top/gvaDemo/k8s.jpg',
-      link: 'https://plugin.gin-vue-admin.com/#/layout/newPluginInfo?id=42'
-    }
   ]
 </script>
 

@@ -8,6 +8,7 @@ import (
 type PurchaseSearch struct {
 	StartCreatedAt *time.Time `json:"startCreatedAt" form:"startCreatedAt"`
 	EndCreatedAt   *time.Time `json:"endCreatedAt" form:"endCreatedAt"`
+	IsRemove       *bool      `json:"isRemove" form:"isRemove" `
 	Remark         *string    `json:"remark" form:"remark" `
 	request.PageInfo
 	Sort  string `json:"sort" form:"sort"`

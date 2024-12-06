@@ -96,6 +96,20 @@ export const getPurchaseList = (params) => {
 }
 
 // @Tags Purchase
+// @Summary 获取数据源
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
+// @Router /purchase/findPurchaseDataSource [get]
+export const getPurchaseDataSource = () => {
+  return service({
+    url: '/purchase/getPurchaseDataSource',
+    method: 'get',
+  })
+}
+
+// @Tags Purchase
 // @Summary 不需要鉴权的采购信息接口
 // @accept application/json
 // @Produce application/json

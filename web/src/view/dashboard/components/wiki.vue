@@ -20,23 +20,23 @@
 <script setup>
   const wikis = [
     {
-      title: 'Vue3',
+      title: '采购',
       url: 'https://v3.cn.vuejs.org/guide/introduction.html'
     },
     {
-      title: 'GIN 文档',
+      title: '估价',
       url: 'https://gin-gonic.com/'
     },
     {
-      title: 'GVA 文档',
+      title: '财务',
       url: 'https://www.gin-vue-admin.com/'
     },
     {
-      title: '插件市场',
+      title: '管理员',
       url: 'https://plugin.gin-vue-admin.com/'
     },
     {
-      title: 'github 仓库',
+      title: '系统工具',
       url: 'https://github.com/flipped-aurora/gin-vue-admin'
     }
   ]

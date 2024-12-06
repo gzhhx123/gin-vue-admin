@@ -150,6 +150,24 @@ func (purchaseApi *PurchaseApi) GetPurchaseList(c *gin.Context) {
 	}, "获取成功", c)
 }
 
+// GetPurchaseDataSource 获取Purchase的数据源
+// @Tags Purchase
+// @Summary 获取Purchase的数据源
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "查询成功"
+// @Router /purchase/getPurchaseDataSource [get]
+func (purchaseApi *PurchaseApi) GetPurchaseDataSource(c *gin.Context) {
+	// 此接口为获取数据源定义的数据
+	dataSource, err := purchaseService.GetPurchaseDataSource()
+	if err != nil {
+		global.GVA_LOG.Error("查询失败!", zap.Error(err))
+		response.FailWithMessage("查询失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithData(dataSource, c)
+}
+
 // GetPurchasePublic 不需要鉴权的采购信息接口
 // @Tags Purchase
 // @Summary 不需要鉴权的采购信息接口

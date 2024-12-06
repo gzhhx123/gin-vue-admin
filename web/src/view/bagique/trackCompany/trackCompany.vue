@@ -74,7 +74,7 @@
                 <el-image preview-teleported v-if="getUrl(scope.row.companyLogo)" style="width: 100px; height: 100px" :src="getUrl(scope.row.companyLogo)" fit="cover"/>
               </template>
           </el-table-column>
-          <el-table-column sortable align="left" label="查询链接" prop="companyUrl" width="120" />
+          <el-table-column sortable align="left" label="查询链接" prop="companyUrl" width="500" />
           <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
             <template #default="scope">
@@ -146,6 +146,12 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
                     </el-descriptions-item>
             </el-descriptions>
         </el-drawer>

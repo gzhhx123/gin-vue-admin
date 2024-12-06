@@ -20,7 +20,9 @@
         <el-form-item label="备注" prop="remark">
          <el-input v-model="searchInfo.remark" placeholder="搜索条件" />
         </el-form-item>
-
+        <el-form-item label="显示已删除" prop="isRemove">
+          <el-switch v-model="searchInfo.isRemove" />
+        </el-form-item>
         <template v-if="showAllQuery">
           <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
         </template>
@@ -31,12 +33,12 @@
           <el-button link type="primary" icon="arrow-down" @click="showAllQuery=true" v-if="!showAllQuery">展开</el-button>
           <el-button link type="primary" icon="arrow-up" @click="showAllQuery=false" v-else>收起</el-button>
         </el-form-item>
+        <div>实时汇率:{{ rate.rate }} 更新时间:{{ formatDate(rate.time) }}</div>
       </el-form>
     </div>
     <div class="gva-table-box">
         <div class="gva-btn-list">
-            <el-button  type="primary" icon="plus" @click="openDialog">新增</el-button>
-            <el-button  icon="delete" style="margin-left: 10px;" :disabled="!multipleSelection.length" @click="onDelete">删除</el-button>
+<!--            <el-button  icon="delete" style="margin-left: 10px;" :disabled="!multipleSelection.length" @click="onDelete">删除</el-button>-->
             <ExportTemplate  template-id="bagique_Purchase" />
             <ExportExcel  template-id="bagique_Purchase" />
             <ImportExcel  template-id="bagique_Purchase" @on-success="getTableData" />
@@ -50,19 +52,20 @@
         @selection-change="handleSelectionChange"
         @sort-change="sortChange"
         >
-        <el-table-column type="selection" width="55" />
+<!--        <el-table-column type="selection" width="55" />-->
         
         <el-table-column align="left" label="创建日期" prop="CreatedAt" width="180" fixed="left">
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
         <el-table-column sortable align="left" label="产品" prop="productId" width="120" fixed="left">
           <template #default="scope">
+            {{ filterDataSource(dataSource.productId,scope.row.evaluate.productId) }}
           </template>
         </el-table-column>
         <el-table-column label="细节图" prop="evaluatePics" width="200">
           <template #default="scope">
             <div class="multiple-img-box">
-              <el-image preview-teleported v-for="(item,index) in scope.row.evaluatePics" :key="index" style="width: 80px; height: 80px" :src="getUrl(item)" fit="cover"/>
+              <el-image preview-teleported v-for="(item,index) in scope.row.evaluate.evaluatePics" :key="index" style="width: 80px; height: 80px" :src="getUrl(item)" fit="cover"/>
             </div>
           </template>
         </el-table-column>
@@ -73,24 +76,49 @@
         </el-table-column>
         <el-table-column label="公司估价" prop="evaluatePrice" align="center">
           <el-table-column label="公司" align="center">
-
+              <template #default="scope">
+                {{ filterDataSource(dataSource.companyId,scope.row.evaluatePrice.companyId) }}
+              </template>
           </el-table-column>
-          <el-table-column label="估价" align="center">
-
+          <el-table-column label="估价" align="center" width="300">
+            <template #default="scope">
+              <div>
+                {{ scope.row.evaluatePrice.price.toFixed(2) }}$【美金】
+              </div>
+              <div>
+                {{(scope.row.evaluate.rate * scope.row.evaluatePrice.price).toFixed(2)}}￥【填写汇率】{{scope.row.evaluate.rate}}
+              </div>
+              <div>
+                {{(rate.rate * scope.row.evaluatePrice.price).toFixed(2)}}￥【实时汇率】{{ rate.rate }}
+              </div>
+            </template>
           </el-table-column>
           <el-table-column label="估价费用" align="center">
-
+            <template #default="scope">
+              <div>
+                {{ scope.row.evaluatePrice.fee.toFixed(2) }}$【美金】
+              </div>
+              <div>
+                {{(scope.row.evaluate.rate * scope.row.evaluatePrice.fee).toFixed(2)}}￥【填写汇率】{{scope.row.evaluate.rate}}
+              </div>
+              <div>
+                {{(rate.rate * scope.row.evaluatePrice.fee).toFixed(2)}}￥【实时汇率】{{ rate.rate }}
+              </div>
+            </template>
           </el-table-column>
           <el-table-column label="备注" align="center">
-
+            <template #default="scope">
+              {{ scope.row.evaluatePrice.remark }}
+            </template>
           </el-table-column>
         </el-table-column>
         <el-table-column sortable align="left" label="备注" prop="remark" width="120" />
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
-            <el-button  type="primary" link icon="edit" class="table-button" @click="updatePurchaseFunc(scope.row)">编辑</el-button>
-            <el-button  type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="edit" class="table-button" @click="updateTrackNoFunc(scope.row)">编辑物流信息</el-button>
+            <el-button  type="primary" link icon="edit" class="table-button" @click="updatePurchaseFunc(scope.row)">编辑时间轴</el-button>
+            <el-button  v-if="!scope.row.DeletedAt" type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -134,30 +162,60 @@
 
     <el-drawer destroy-on-close size="800" v-model="detailShow" :show-close="true" :before-close="closeDetailShow" title="查看">
             <el-descriptions :column="1" border>
+                    <el-descriptions-item label="产品">
+                        {{ filterDataSource(dataSource.productId,detailFrom.evaluate.productId) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="细节图">
+                      <el-image style="width: 50px; height: 50px; margin-right: 10px" :preview-src-list="returnArrImg(detailFrom.evaluate.evaluatePics)" :initial-index="index" v-for="(item,index) in detailFrom.evaluate.evaluatePics" :key="index" :src="getUrl(item)" fit="cover" />
+                    </el-descriptions-item>
                     <el-descriptions-item label="估价公司估价">
-                        {{ detailFrom.evaluatePriceId }}
+                        <div>
+                          <div>公司:{{ filterDataSource(dataSource.companyId,detailFrom.evaluatePrice.companyId) }}</div>
+                          <br>
+                          <div>
+                            估价:<br>
+                            {{ detailFrom.evaluatePrice.price.toFixed(2) }}$【美金】<br>
+                            {{(detailFrom.evaluate.rate * detailFrom.evaluatePrice.price).toFixed(2)}}￥【填写汇率】{{detailFrom.evaluate.rate}}<br>
+                            {{(rate.rate * detailFrom.evaluatePrice.price).toFixed(2)}}￥【实时汇率】{{ rate.rate }}
+                          </div>
+                          <br>
+                          <div>
+                            估价费用:<br>
+                            {{ detailFrom.evaluatePrice.fee.toFixed(2) }}$【美金】<br>
+                            {{(detailFrom.evaluate.rate * detailFrom.evaluatePrice.fee).toFixed(2)}}￥【填写汇率】{{detailFrom.evaluate.rate}}<br>
+                            {{(rate.rate * detailFrom.evaluatePrice.fee).toFixed(2)}}￥【实时汇率】{{ rate.rate }}
+                          </div>
+                          <br>
+                          <div>备注:{{ detailFrom.evaluatePrice.remark }}</div>
+                        </div>
                     </el-descriptions-item>
                     <el-descriptions-item label="采购状态">
-                        {{ detailFrom.status }}
+                        {{ filterDict(detailFrom.status,purchase_statusOptions) }}
                     </el-descriptions-item>
                     <el-descriptions-item label="备注">
                         {{ detailFrom.remark }}
                     </el-descriptions-item>
-            </el-descriptions>
+                    <el-descriptions-item label="创建时间">
+                      {{ formatDate(detailFrom.CreatedAt) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="更新时间">
+                      {{ formatDate(detailFrom.UpdatedAt) }}
+                    </el-descriptions-item>
+                  </el-descriptions>
         </el-drawer>
 
   </div>
 </template>
 
 <script setup>
-import {
-  createPurchase,
-  deletePurchase,
-  deletePurchaseByIds,
-  updatePurchase,
-  findPurchase,
-  getPurchaseList
-} from '@/api/bagique/purchase'
+  import {
+    createPurchase,
+    deletePurchase,
+    deletePurchaseByIds,
+    updatePurchase,
+    findPurchase,
+    getPurchaseList, getPurchaseDataSource
+  } from '@/api/bagique/purchase'
 
 // 全量引入格式化工具 请按需保留
 import { getDictFunc, formatDate, formatBoolean, filterDict ,filterDataSource, returnArrImg, onDownloadFile } from '@/utils/format'
@@ -171,6 +229,8 @@ import ImportExcel from '@/components/exportExcel/importExcel.vue'
 // 导出模板组件
 import ExportTemplate from '@/components/exportExcel/exportTemplate.vue'
 import { getUrl } from '@/utils/image'
+import { getProductDataSource } from '@/api/bagique/product'
+  import { getRate } from '@/api/bagique/common'
 
 
 defineOptions({
@@ -190,7 +250,14 @@ const formData = ref({
             status: '',
             remark: '',
         })
-
+const dataSource = ref([])
+const getDataSourceFunc = async()=>{
+  const res = await getPurchaseDataSource()
+  if (res.code === 0) {
+    dataSource.value = res.data
+  }
+}
+getDataSourceFunc()
 
 
 // 验证规则
@@ -239,6 +306,10 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const searchInfo = ref({})
+const rate = ref({
+  rate: 0,
+  time: ''
+})
 // 排序
 const sortChange = ({ prop, order }) => {
   const sortMap = {
@@ -295,7 +366,16 @@ const getTableData = async() => {
   }
 }
 
+  // 获取美元汇率
+  const getRateData = async () => {
+    const res = await getRate({})
+    if (res.code === 0) {
+      rate.value = res.data
+    }
+  }
+
 getTableData()
+getRateData()
 
 // ============== 表格控制部分结束 ===============
 
@@ -371,6 +451,8 @@ const updatePurchaseFunc = async(row) => {
         dialogFormVisible.value = true
     }
 }
+
+// 更新行物流单号
 
 
 // 删除行

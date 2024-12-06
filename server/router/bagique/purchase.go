@@ -23,6 +23,7 @@ func (s *PurchaseRouter) InitPurchaseRouter(Router *gin.RouterGroup, PublicRoute
 		purchaseRouterWithoutRecord.GET("getPurchaseList", purchaseApi.GetPurchaseList)
 	}
 	{
+		purchaseRouterWithoutAuth.GET("getPurchaseDataSource", purchaseApi.GetPurchaseDataSource)
 		purchaseRouterWithoutAuth.GET("getPurchasePublic", purchaseApi.GetPurchasePublic)
 	}
 }

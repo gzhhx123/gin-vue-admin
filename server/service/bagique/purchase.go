@@ -49,7 +49,7 @@ func (purchaseService *PurchaseService) UpdatePurchase(purchase bagique.Purchase
 // GetPurchase 根据ID获取采购信息记录
 // Author [yourname](https://github.com/yourname)
 func (purchaseService *PurchaseService) GetPurchase(ID string) (purchase bagique.Purchase, err error) {
-	err = global.MustGetGlobalDBByDBName("bagique").Where("id = ?", ID).First(&purchase).Error
+	err = global.MustGetGlobalDBByDBName("bagique").Preload("Evaluate").Preload("EvaluatePrice").Where("id = ?", ID).First(&purchase).Error
 	return
 }
 
@@ -62,6 +62,9 @@ func (purchaseService *PurchaseService) GetPurchaseInfoList(info bagiqueReq.Purc
 	db := global.MustGetGlobalDBByDBName("bagique").Preload("Evaluate").Preload("EvaluatePrice").Model(&bagique.Purchase{})
 	var purchases []bagique.Purchase
 	// 如果有条件搜索 下方会自动创建搜索语句
+	if info.IsRemove != nil && *info.IsRemove == true {
+		db = db.Unscoped()
+	}
 	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
 		db = db.Where("created_at BETWEEN ? AND ?", info.StartCreatedAt, info.EndCreatedAt)
 	}
@@ -92,6 +95,19 @@ func (purchaseService *PurchaseService) GetPurchaseInfoList(info bagiqueReq.Purc
 	err = db.Find(&purchases).Error
 	return purchases, total, err
 }
+
+func (purchaseService *PurchaseService) GetPurchaseDataSource() (res map[string][]map[string]any, err error) {
+	res = make(map[string][]map[string]any)
+
+	companyId := make([]map[string]any, 0)
+	productId := make([]map[string]any, 0)
+	global.MustGetGlobalDBByDBName("bagique").Table("bagique_companies").Where("deleted_at IS NULL").Select("company_name as label,id as value").Scan(&companyId)
+	global.MustGetGlobalDBByDBName("bagique").Table("bagique_products").Where("deleted_at IS NULL").Select("product_name as label,id as value").Scan(&productId)
+	res["companyId"] = companyId
+	res["productId"] = productId
+	return
+}
+
 func (purchaseService *PurchaseService) GetPurchasePublic() {
 	// 此方法为获取数据源定义的数据
 	// 请自行实现

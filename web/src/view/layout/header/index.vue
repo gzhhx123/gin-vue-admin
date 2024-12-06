@@ -26,7 +26,8 @@
             'min-w-fit'
           "
         >
-          {{ $GIN_VUE_ADMIN.appName }}
+          二奢管理后台
+<!--          {{ $GIN_VUE_ADMIN.appName }}-->
         </div>
       </div>
 

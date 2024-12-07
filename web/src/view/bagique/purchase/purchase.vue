@@ -116,9 +116,11 @@
         <el-table-column align="left" label="操作" fixed="right" min-width="240">
             <template #default="scope">
             <el-button  type="primary" link class="table-button" @click="getDetails(scope.row)"><el-icon style="margin-right: 5px"><InfoFilled /></el-icon>查看</el-button>
-            <el-button  type="primary" link icon="edit" class="table-button" @click="updateTrackNoFunc(scope.row)">编辑物流信息</el-button>
-            <el-button  type="primary" link icon="edit" class="table-button" @click="updatePurchaseFunc(scope.row)">编辑时间轴</el-button>
-            <el-button  v-if="!scope.row.DeletedAt" type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
+            <el-button  type="primary" link icon="info-filled" class="table-button" @click="purchaseTimeAxisFunc(scope.row)">查看时间轴</el-button>
+            <el-button  type="primary" link icon="edit" class="table-button" v-if="scope.row.status==='ADD'" @click="updateTrackNoFunc(scope.row)">编辑物流信息</el-button>
+              <el-button  type="primary" v-if="scope.row.status==='ADD'" link icon="circle-check" class="table-button" @click="finishRow(scope.row)">完成采购</el-button>
+              <el-button  type="primary" v-if="scope.row.status==='ADD'||scope.row.status==='REFUSE'" link icon="circle-close" class="table-button" @click="cancelRow(scope.row)">取消采购</el-button>
+            <el-button  v-if="!scope.row.DeletedAt&&scope.row.status!=='FINISH'" type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
             </template>
         </el-table-column>
         </el-table>
@@ -134,41 +136,117 @@
             />
         </div>
     </div>
-    <el-drawer destroy-on-close size="800" v-model="dialogFormVisible" :show-close="false" :before-close="closeDialog">
-       <template #header>
-              <div class="flex justify-between items-center">
-                <span class="text-lg">{{type==='create'?'新增':'编辑'}}</span>
-                <div>
-                  <el-button :loading="btnLoading" type="primary" @click="enterDialog">确 定</el-button>
-                  <el-button @click="closeDialog">取 消</el-button>
-                </div>
+    <el-drawer destroy-on-close size="1600" v-model="dialogFormVisible" :show-close="false" :before-close="closeDialog">
+         <template #header>
+            <div class="flex justify-between items-center">
+              <span class="text-lg">{{type==='trackNo'?'编辑物流信息':'编辑时间轴'}}</span>
+              <div>
+                <el-button :loading="btnLoading" type="primary" @click="enterDialog">确 定</el-button>
+                <el-button @click="closeDialog">取 消</el-button>
               </div>
-            </template>
+            </div>
+          </template>
 
-          <el-form :model="formData" label-position="top" ref="elFormRef" :rules="rule" label-width="80px">
-            <el-form-item label="估价公司估价:"  prop="evaluatePriceId" >
-              <el-input v-model.number="formData.evaluatePriceId" :clearable="true" placeholder="请输入估价公司估价" />
-            </el-form-item>
-            <el-form-item label="采购状态:"  prop="status" >
-              <el-select v-model="formData.status" placeholder="请选择采购状态" style="width:100%" :clearable="true" >
-                <el-option v-for="(item,key) in purchase_statusOptions" :key="key" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="备注:"  prop="remark" >
-              <el-input v-model="formData.remark" :clearable="true"  placeholder="请输入备注" />
+          <el-form  label-position="top" ref="elFormRef" :rules="rule" label-width="80px">
+            <el-form-item label="物流信息:">
+              <el-button type="primary" icon="edit" @click="addTrackNo">
+                新增物流信息
+              </el-button>
+              <el-table ref="singleTableRef" :data="trackData.list" >
+                <el-table-column label="物流公司" align="center">
+                  <template #default="scope">
+                    <el-select
+                      style="width: 100%"
+                      v-model="scope.row.trackCompanyId"
+                      placeholder="请选择物流公司"
+                      :clearable="true">
+                      <el-option
+                        v-for="(item,key) in dataSource.trackCompanyId"
+                        :key="key"
+                        :label="item.label"
+                        :value="item.value"/>
+                    </el-select>
+                  </template>
+                </el-table-column>
+                <el-table-column label="物流单号" align="center">
+                  <template #default="scope">
+                    <el-input
+                      v-model="scope.row.orderSn"
+                      placeholder="请输入物流单号"
+                      clearable/>
+                  </template>
+                </el-table-column>
+                <el-table-column label="单号类型" align="center">
+                  <template #default="scope">
+                    <el-select
+                      style="width: 100%"
+                      v-model="scope.row.type"
+                      placeholder="请选择单号类型"
+                      :clearable="true">
+                      <el-option
+                        v-for="(item,key) in track_no_typeOptions"
+                        :key="key"
+                        :label="item.label"
+                        :value="item.value"/>
+                    </el-select>
+                  </template>
+                </el-table-column>
+                <el-table-column label="状态" align="center">
+                  <template #default="scope">
+                    <el-select
+                      style="width: 100%"
+                      v-model="scope.row.status"
+                      placeholder="请选择状态"
+                      :clearable="true">
+                      <el-option
+                        v-for="(item,key) in track_no_statusOptions"
+                        :key="key"
+                        :label="item.label"
+                        :value="item.value"/>
+                    </el-select>
+                  </template>
+                </el-table-column>
+                <el-table-column label="备注" align="center">
+                  <template #default="scope">
+                    <el-input
+                      v-model="scope.row.remark"
+                      placeholder="请输入备注"
+                      clearable/>
+                  </template>
+                </el-table-column>
+                <el-table-column label="创建时间" align="center">
+                  <template #default="scope">
+                    {{ formatDate(scope.row.CreatedAt) }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="更新时间" align="center">
+                  <template #default="scope">
+                    {{ formatDate(scope.row.UpdatedAt) }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center">
+                  <template #default="scope">
+                    <div class="flex flex-col items-center justify-center">
+                      <el-button @click="upRow(scope.row)">上移</el-button>
+                      <el-button class="mt-2 ml-0"  @click="downRow(scope.row)">下移</el-button>
+                      <el-button type="primary" class="mt-2 ml-0"  @click="removeRow(scope.row)">删除</el-button>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
             </el-form-item>
           </el-form>
     </el-drawer>
 
     <el-drawer destroy-on-close size="800" v-model="detailShow" :show-close="true" :before-close="closeDetailShow" title="查看">
             <el-descriptions :column="1" border>
-                    <el-descriptions-item label="产品">
+                    <el-descriptions-item label="产品" v-if="Object.keys(detailFrom).length>0">
                         {{ filterDataSource(dataSource.productId,detailFrom.evaluate.productId) }}
                     </el-descriptions-item>
-                    <el-descriptions-item label="细节图">
+                    <el-descriptions-item label="细节图" v-if="Object.keys(detailFrom).length>0">
                       <el-image style="width: 50px; height: 50px; margin-right: 10px" :preview-src-list="returnArrImg(detailFrom.evaluate.evaluatePics)" :initial-index="index" v-for="(item,index) in detailFrom.evaluate.evaluatePics" :key="index" :src="getUrl(item)" fit="cover" />
                     </el-descriptions-item>
-                    <el-descriptions-item label="估价公司估价">
+                    <el-descriptions-item label="估价公司估价" v-if="Object.keys(detailFrom).length>0">
                         <div>
                           <div>公司:{{ filterDataSource(dataSource.companyId,detailFrom.evaluatePrice.companyId) }}</div>
                           <br>
@@ -203,7 +281,13 @@
                     </el-descriptions-item>
                   </el-descriptions>
         </el-drawer>
-
+    <el-drawer destroy-on-close size="800" v-model="axisShow" :show-close="true" :before-close="closeAxisShow" title="查看时间轴">
+      <div>
+        <el-steps direction="vertical" :active="timeAxis.length" class="w-full"  style="height: 40vh">
+          <el-step :title="item['content']" :description="'达成时间:'+formatDate(item['time'])" v-for="(item,index) in timeAxis" />
+        </el-steps>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -214,7 +298,13 @@
     deletePurchaseByIds,
     updatePurchase,
     findPurchase,
-    getPurchaseList, getPurchaseDataSource
+    getPurchaseList,
+    getPurchaseDataSource,
+    findPurchaseTrackNosById,
+    updateTrackNo,
+    purchaseTimeAxis,
+    cancelPurchase,
+    finishPurchase
   } from '@/api/bagique/purchase'
 
 // 全量引入格式化工具 请按需保留
@@ -245,11 +335,9 @@ const showAllQuery = ref(false)
 
 // 自动化生成的字典（可能为空）以及字段
 const purchase_statusOptions = ref([])
-const formData = ref({
-            evaluatePriceId: undefined,
-            status: '',
-            remark: '',
-        })
+const track_no_statusOptions = ref([])
+const track_no_typeOptions = ref([])
+const trackData = ref({list:[],id:0})
 const dataSource = ref([])
 const getDataSourceFunc = async()=>{
   const res = await getPurchaseDataSource()
@@ -382,6 +470,8 @@ getRateData()
 // 获取需要的字典 可能为空 按需保留
 const setOptions = async () =>{
     purchase_statusOptions.value = await getDictFunc('purchase_status')
+    track_no_statusOptions.value = await getDictFunc('track_no_status')
+    track_no_typeOptions.value = await getDictFunc('track_no_type')
 }
 
 // 获取需要的字典 可能为空 按需保留
@@ -453,6 +543,15 @@ const updatePurchaseFunc = async(row) => {
 }
 
 // 更新行物流单号
+  const updateTrackNoFunc = async(row) =>{
+    const res = await findPurchaseTrackNosById({ ID: row.ID })
+    type.value = 'trackNo'
+    if (res.code === 0) {
+      trackData.value.list = res.data.list
+      trackData.value.id = row.ID
+      dialogFormVisible.value = true
+    }
+  }
 
 
 // 删除行
@@ -473,55 +572,57 @@ const deletePurchaseFunc = async (row) => {
 // 弹窗控制标记
 const dialogFormVisible = ref(false)
 
-// 打开弹窗
-const openDialog = () => {
-    type.value = 'create'
-    dialogFormVisible.value = true
-}
 
 // 关闭弹窗
 const closeDialog = () => {
     dialogFormVisible.value = false
-    formData.value = {
-        evaluatePriceId: undefined,
-        status: '',
-        remark: '',
-        }
+    trackData.value = {
+      list:[],
+      id:0
+    }
 }
 // 弹窗确定
 const enterDialog = async () => {
      btnLoading.value = true
-     elFormRef.value?.validate( async (valid) => {
-             if (!valid) return btnLoading.value = false
-              let res
-              switch (type.value) {
-                case 'create':
-                  res = await createPurchase(formData.value)
-                  break
-                case 'update':
-                  res = await updatePurchase(formData.value)
-                  break
-                default:
-                  res = await createPurchase(formData.value)
-                  break
-              }
-              btnLoading.value = false
-              if (res.code === 0) {
-                ElMessage({
-                  type: 'success',
-                  message: '创建/更改成功'
-                })
-                closeDialog()
-                getTableData()
-              }
+     // elFormRef.value?.validate( async (valid) => {
+     //         if (!valid) return btnLoading.value = false
+     //
+     //  })
+  let res
+  switch (type.value) {
+    case 'trackNo':
+      //对sort进行重新赋值
+      trackData.value.list.forEach((item,index)=>{
+        item.sort = index
       })
+      res = await updateTrackNo(trackData.value)
+      break
+    case 'update':
+      res = await updatePurchase(formData.value)
+      break
+    default:
+      res = await createPurchase(formData.value)
+      break
+  }
+  btnLoading.value = false
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '更新成功'
+    })
+    closeDialog()
+    getTableData()
+  }
 }
 
 
+
 const detailFrom = ref({})
+  const timeAxis = ref([])
 
 // 查看详情控制标记
 const detailShow = ref(false)
+  const axisShow = ref(false)
 
 
 // 打开详情弹窗
@@ -546,6 +647,109 @@ const closeDetailShow = () => {
   detailShow.value = false
   detailFrom.value = {}
 }
+
+const closeAxisShow = () => {
+  axisShow.value = false
+  timeAxis.value = []
+}
+
+// 新增物流信息
+const addTrackNo = () => {
+  if (!trackData.value.list){
+    trackData.value.list = []
+  }
+  console.log(detailFrom.value)
+  trackData.value.list.push({
+    trackCompanyId: undefined,
+    orderSn: '',
+    status: '',
+    type:'',
+    remark: '',
+    sort: trackData.value.list.length
+  })
+}
+
+// 上移
+const upRow = (row) => {
+  const index = trackData.value.list.indexOf(row)
+  if (index > 0) {
+    const temp = trackData.value.list[index]
+    trackData.value.list[index] = trackData.value.list[index - 1]
+    trackData.value.list[index - 1] = temp
+  }
+}
+
+// 下移
+const downRow = (row) => {
+  const index = trackData.value.list.indexOf(row)
+  if (index < trackData.value.list.length - 1) {
+    const temp = trackData.value.list[index]
+    trackData.value.list[index] = trackData.value.list[index + 1]
+    trackData.value.list[index + 1] = temp
+  }
+}
+
+// 删除
+const removeRow = (row) => {
+  const index = trackData.value.list.indexOf(row)
+  trackData.value.list.splice(index, 1)
+}
+
+//查看采购时间轴
+  const purchaseTimeAxisFunc = async (row) => {
+    const res = await purchaseTimeAxis({ ID: row.ID })
+    if (res.code === 0) {
+      timeAxis.value = res.data.list
+      axisShow.value = true
+    }
+  }
+
+  //完成采购
+  const finishRow = (row) => {
+    ElMessageBox.confirm('确定要完成采购吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      finishPurchaseFunc(row)
+    })
+  }
+
+  // 取消采购
+  const cancelRow = (row) => {
+    ElMessageBox.confirm('确定要取消采购吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      cancelPurchaseFunc(row)
+    })
+  }
+
+
+  // 完成行
+  const finishPurchaseFunc = async (row)=>{
+    const res = await finishPurchase({ ID: row.ID })
+    if (res.code === 0) {
+      ElMessage({
+        type: 'success',
+        message: '完成采购成功'
+      })
+      getTableData()
+    }
+  }
+
+  // 取消行
+  const cancelPurchaseFunc = async (row)=>{
+    const res = await cancelPurchase({ ID: row.ID })
+    if (res.code === 0) {
+      ElMessage({
+        type: 'success',
+        message: '取消采购成功'
+      })
+      getTableData()
+    }
+  }
 
 
 </script>

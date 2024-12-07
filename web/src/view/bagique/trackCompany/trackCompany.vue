@@ -16,7 +16,11 @@
        —
       <el-date-picker v-model="searchInfo.endCreatedAt" type="datetime" placeholder="结束日期" :disabled-date="time=> searchInfo.startCreatedAt ? time.getTime() < searchInfo.startCreatedAt.getTime() : false"></el-date-picker>
       </el-form-item>
-      
+        <el-form-item label="所属国家" prop="country">
+          <el-select v-model="searchInfo.country" clearable placeholder="请选择" @clear="()=>{searchInfo.country=undefined}">
+            <el-option v-for="(item,key) in track_company_countryOptions" :key="key" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="公司名称" prop="companyName">
          <el-input v-model="searchInfo.companyName" placeholder="搜索条件" />
         </el-form-item>
@@ -69,6 +73,11 @@
         
           <el-table-column sortable align="left" label="公司名称" prop="companyName" width="120" />
           <el-table-column sortable align="left" label="公司简称" prop="companyShortName" width="120" />
+          <el-table-column sortable align="left" label="所属国家" prop="country" width="120">
+            <template #default="scope">
+              {{ filterDict(scope.row.country,track_company_countryOptions) }}
+            </template>
+          </el-table-column>
           <el-table-column label="公司logo" prop="companyLogo" width="200">
               <template #default="scope">
                 <el-image preview-teleported v-if="getUrl(scope.row.companyLogo)" style="width: 100px; height: 100px" :src="getUrl(scope.row.companyLogo)" fit="cover"/>
@@ -115,6 +124,11 @@
             <el-form-item label="公司简称:"  prop="companyShortName" >
               <el-input v-model="formData.companyShortName" :clearable="true"  placeholder="请输入公司简称" />
             </el-form-item>
+            <el-form-item label="所属国家:"  prop="country" >
+              <el-select v-model="formData.country" placeholder="请选择所属国家" style="width:100%" :clearable="true" >
+                <el-option v-for="(item,key) in track_company_countryOptions" :key="key" :label="item.label" :value="item.value" />
+              </el-select>
+            </el-form-item>
             <el-form-item label="公司logo:"  prop="companyLogo" >
                 <SelectImage
                  v-model="formData.companyLogo"
@@ -137,6 +151,9 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="公司简称">
                         {{ detailFrom.companyShortName }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="所属国家">
+                      {{ detailFrom.country }}
                     </el-descriptions-item>
                     <el-descriptions-item label="公司logo">
                             <el-image style="width: 50px; height: 50px" :preview-src-list="returnArrImg(detailFrom.companyLogo)" :src="getUrl(detailFrom.companyLogo)" fit="cover" />
@@ -202,9 +219,10 @@ const formData = ref({
             companyLogo: "",
             companyUrl: '',
             remark: '',
+            country: '',
         })
 
-
+  const track_company_countryOptions = ref([])
 
 // 验证规则
 const rule = reactive({
@@ -217,7 +235,18 @@ const rule = reactive({
                    whitespace: true,
                    message: '不能只输入空格',
                    trigger: ['input', 'blur'],
-              }
+              },
+              ],
+              country : [{
+                required: true,
+                message: '请正确选择所属国家',
+                trigger: ['input','blur'],
+              },
+                {
+                  whitespace: true,
+                  message: '不能只输入空格',
+                  trigger: ['input', 'blur'],
+                }
               ],
 })
 
@@ -311,6 +340,7 @@ getTableData()
 
 // 获取需要的字典 可能为空 按需保留
 const setOptions = async () =>{
+  track_company_countryOptions.value = await getDictFunc('track_company_country')
 }
 
 // 获取需要的字典 可能为空 按需保留
@@ -440,6 +470,7 @@ const closeDialog = () => {
         companyLogo: "",
         companyUrl: '',
         remark: '',
+      country: '',
         }
 }
 // 弹窗确定

@@ -12,6 +12,7 @@ type TrackCompany struct {
 	CompanyShortName *string `json:"companyShortName" form:"companyShortName" gorm:"column:company_short_name;comment:公司简称;"`    //公司简称
 	CompanyLogo      string  `json:"companyLogo" form:"companyLogo" gorm:"column:company_logo;comment:公司logo;"`                  //公司logo
 	CompanyUrl       *string `json:"companyUrl" form:"companyUrl" gorm:"column:company_url;comment:查询链接;"`                       //查询链接
+	Country          *string `json:"country" form:"country" gorm:"column:country;comment:所属国家;" binding:"required"`              //所属国家
 	Remark           *string `json:"remark" form:"remark" gorm:"column:remark;comment:备注;"`                                      //备注
 }
 

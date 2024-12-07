@@ -17,6 +17,11 @@ func (s *PurchaseRouter) InitPurchaseRouter(Router *gin.RouterGroup, PublicRoute
 		purchaseRouter.DELETE("deletePurchaseByIds", purchaseApi.DeletePurchaseByIds)
 		purchaseRouter.PUT("updatePurchase", purchaseApi.UpdatePurchase)
 		purchaseRouter.PUT("refuseEvaluate", purchaseApi.RefuseEvaluate)
+		purchaseRouter.GET("findPurchaseTrackNosById", purchaseApi.FindPurchaseTrackNosById)
+		purchaseRouter.POST("updateTrackNo", purchaseApi.UpdateTrackNo)
+		purchaseRouter.GET("purchaseTimeAxis", purchaseApi.PurchaseTimeAxis)
+		purchaseRouter.PUT("finishPurchase", purchaseApi.FinishPurchase)
+		purchaseRouter.PUT("cancelPurchase", purchaseApi.CancelPurchase)
 	}
 	{
 		purchaseRouterWithoutRecord.GET("findPurchase", purchaseApi.FindPurchase)

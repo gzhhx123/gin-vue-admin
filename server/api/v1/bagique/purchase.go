@@ -203,3 +203,110 @@ func (purchaseApi *PurchaseApi) RefuseEvaluate(c *gin.Context) {
 	}
 	response.OkWithData("驳回成功", c)
 }
+
+// FindPurchaseTrackNosById 根据采购ID获取物流单号
+// @Tags Purchase
+// @Summary 根据采购ID获取物流单号
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/findPurchaseTrackNosById [GET]
+func (purchaseApi *PurchaseApi) FindPurchaseTrackNosById(c *gin.Context) {
+	ID := c.Query("ID")
+	list, err := purchaseService.FindPurchaseTrackNosById(ID)
+	if err != nil {
+		global.GVA_LOG.Error("查找失败!", zap.Error(err))
+		response.FailWithMessage("查找失败", c)
+		return
+	}
+	//返回数据用list包一下
+	response.OkWithData(gin.H{
+		"list": list,
+	}, c)
+}
+
+// UpdateTrackNo 根据采购ID更新物流单号
+// @Tags Purchase
+// @Summary 根据采购ID更新物流单号
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/updateTrackNo [POST]
+func (purchaseApi *PurchaseApi) UpdateTrackNo(c *gin.Context) {
+	type TrackNoQuery struct {
+		ID   uint              `json:"id"`
+		List []bagique.TrackNo `json:"list"`
+	}
+	var trackNosQuery TrackNoQuery
+	err := c.ShouldBindJSON(&trackNosQuery)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	err = purchaseService.UpdateTrackNo(trackNosQuery.ID, trackNosQuery.List)
+	if err != nil {
+		global.GVA_LOG.Error("更新失败!", zap.Error(err))
+		response.FailWithMessage("更新失败", c)
+		return
+	}
+	response.OkWithData("更新成功", c)
+}
+
+// PurchaseTimeAxis 查看采购时间轴
+// @Tags Purchase
+// @Summary 查看采购时间轴
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/purchaseTimeAxis [GET]
+func (purchaseApi *PurchaseApi) PurchaseTimeAxis(c *gin.Context) {
+	ID := c.Query("ID")
+	axis, err := purchaseService.PurchaseTimeAxis(ID)
+	if err != nil {
+		global.GVA_LOG.Error("查找失败!", zap.Error(err))
+		response.FailWithMessage("查找失败", c)
+		return
+	}
+	response.OkWithData(axis, c)
+}
+
+// FinishPurchase 根据ID完成采购
+// @Tags Purchase
+// @Summary 根据ID完成采购
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/finishPurchase [PUT]
+func (purchaseApi *PurchaseApi) FinishPurchase(c *gin.Context) {
+	ID := c.Query("ID")
+	err := purchaseService.FinishPurchase(ID)
+	if err != nil {
+		global.GVA_LOG.Error("提交失败!", zap.Error(err))
+		response.FailWithMessage("提交失败", c)
+		return
+	}
+	response.OkWithData("提交成功", c)
+}
+
+// CancelPurchase 根据ID取消采购
+// @Tags Purchase
+// @Summary 根据ID取消采购
+// @accept application/json
+// @Produce application/json
+// @Param data query bagiqueReq.PurchaseSearch true "成功"
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/cancelPurchase [PUT]
+func (purchaseApi *PurchaseApi) CancelPurchase(c *gin.Context) {
+	ID := c.Query("ID")
+	err := purchaseService.CancelPurchase(ID)
+	if err != nil {
+		global.GVA_LOG.Error("提交失败!", zap.Error(err))
+		response.FailWithMessage("提交失败", c)
+		return
+	}
+	response.OkWithData("提交成功", c)
+}

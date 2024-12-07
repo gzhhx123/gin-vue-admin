@@ -136,3 +136,73 @@ export const refuseEvaluate = (params) => {
     params
   })
 }
+// FindPurchaseTrackNosById 根据采购ID获取物流单号
+// @Tags Purchase
+// @Summary 根据采购ID获取物流单号
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/findPurchaseTrackNosById [GET]
+export const findPurchaseTrackNosById = (params) => {
+  return service({
+    url: '/purchase/findPurchaseTrackNosById',
+    method: 'GET',
+    params
+  })
+}
+// UpdateTrackNo 根据采购ID更新物流单号
+// @Tags Purchase
+// @Summary 根据采购ID更新物流单号
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/updateTrackNo [POST]
+export const updateTrackNo = (data) => {
+  return service({
+    url: '/purchase/updateTrackNo',
+    method: 'POST',
+    data
+  })
+}
+// PurchaseTimeAxis 查看采购时间轴
+// @Tags Purchase
+// @Summary 查看采购时间轴
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/purchaseTimeAxis [GET]
+export const purchaseTimeAxis = (params) => {
+  return service({
+    url: '/purchase/purchaseTimeAxis',
+    method: 'GET',
+    params
+  })
+}
+// FinishPurchase 根据ID完成采购
+// @Tags Purchase
+// @Summary 根据ID完成采购
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/finishPurchase [PUT]
+export const finishPurchase = (params) => {
+  return service({
+    url: '/purchase/finishPurchase',
+    method: 'PUT',
+    params
+  })
+}
+// CancelPurchase 根据ID取消采购
+// @Tags Purchase
+// @Summary 根据ID取消采购
+// @accept application/json
+// @Produce application/json
+// @Success 200 {object} response.Response{data=object,msg=string} "成功"
+// @Router /purchase/cancelPurchase [PUT]
+export const cancelPurchase = (params) => {
+  return service({
+    url: '/purchase/cancelPurchase',
+    method: 'PUT',
+    params
+  })
+}

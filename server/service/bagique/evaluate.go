@@ -90,7 +90,7 @@ func (evaluateService *EvaluateService) UpdateEvaluate(evaluate bagique.Evaluate
 	// 3. 遍历前端传递的数据 进行相应的操作
 	for _, v := range evaluate.EvaluatePrices {
 		if existingPrice, exists := existingMap[v.ID]; exists {
-			if existingPrice.CompanyId != v.CompanyId || existingPrice.Price != v.Price || existingPrice.Fee != v.Fee || existingPrice.Remark != v.Remark {
+			if *existingPrice.CompanyId != *v.CompanyId || *existingPrice.Price != *v.Price || *existingPrice.Fee != *v.Fee || *existingPrice.Remark != *v.Remark {
 				err = tx.Model(&bagique.EvaluatePrice{}).Where("id = ?", v.ID).Updates(&v).Error
 				if err != nil {
 					tx.Rollback()

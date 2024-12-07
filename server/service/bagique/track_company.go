@@ -74,6 +74,9 @@ func (trackCompanyService *TrackCompanyService) GetTrackCompanyInfoList(info bag
 	if info.Remark != nil && *info.Remark != "" {
 		db = db.Where("remark LIKE ?", "%"+*info.Remark+"%")
 	}
+	if info.Country != nil && *info.Country != "" {
+		db = db.Where("country = ?", *info.Country)
+	}
 	err = db.Count(&total).Error
 	if err != nil {
 		return
@@ -86,6 +89,7 @@ func (trackCompanyService *TrackCompanyService) GetTrackCompanyInfoList(info bag
 	orderMap["company_logo"] = true
 	orderMap["company_url"] = true
 	orderMap["remark"] = true
+	orderMap["country"] = true
 	if orderMap[info.Sort] {
 		OrderStr = info.Sort
 		if info.Order == "descending" {
